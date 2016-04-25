@@ -1,7 +1,11 @@
-#
-# .gitignore - inhibit git from tracking files matching the below patterns
-#
-#
+# Git Ignore - .gitignore
+#fspath patterns that ensure that matching untracked files remain untracked
+
+
+**/gpgkeys/*.gpg
+etc/salt/pki
+**/packer_cache
+output-*/
 
 
 # for directory tracking, add empty .gitignore to example/.
@@ -25,6 +29,7 @@
 # ignore secret/personal stuffs (except example files)
 *.gpg
 *.asc
+*.private
 .secret.d/*/*
 !*__example
 
@@ -34,13 +39,31 @@
 *\#*
 auto-save-list/*
 ~$*
-.swp
-*.swp
+
+
+# temp ao cache files
+var/*
+tmp/*
+nohup.out
+gmon.out
+
+# compiled ao binary
+*.pyc
+*.pyo
+*.elc
+*.o
+*.a
+*.exe
+*.pch
+
+# project files
+.vagrant
+
 
 # temp ao cache files
 var/*/*
 tmp/*
-
+*.html
 
 
 # compiled ao binary
@@ -58,6 +81,9 @@ tmp/*
 *\#*
 *~
 *.log
+.swp
+*.swp
+
 
 # MSVS project files
 **/Debug/
@@ -84,3 +110,6 @@ tmp/*
 # never ignore these
 !**/Utilities/**
 !**/.gitkeep
+
+
+

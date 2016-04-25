@@ -1,0 +1,29 @@
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on Genesis // Lexicon
+
+** defined-terms
+   :PROPERTIES:
+   :ID:       0141C84D-6A39-4278-ADB4-17BC175968E8
+   :END:
+ - <<graph>> :: the collection of machines in an environment that are capable and presently enabled for coordinated control via Salt.
+   - in the most typical case, this is a list of machines with the salt-minion installed that are connected to the salt-master
+   - the intended reference is to https://en.wikipedia.org/wiki/Graph_theory , to be disambiguated from https://en.wikipedia.org/wiki/Chart
+   - defined in contrast to: horde
+ - <<horde>> :: the collection of machines in an environment that are _not_ presently enabled for coordinated control via Salt.
+   - in a typical case, the horde are the machines that are either:
+     - not yet added to the graph, a/o
+     - lack a feasable capability to join the graph, a/o
+     - are "rogue", unknown, or otherwise unaccounted, a/o
+     - are simply not joined and not marked for eventual inclusion into the graph
+ - attributes :: aka, <<targeting-attributes>>. The collected information about graph members that is considered for evaluation during a specific targetting clause
+   - attributes are a generalization, (a/ an attempt at simplifying communication), around the varied means of targetting
+   - attributes are also an attempt to excersize discipline, (in the interest of comprehensibility, maintainability a/ ultimately sustainability)
+   - attributes are also an attempt at minimizing unnecessary changes w/i top files, preventing risk and isolating highly-mutable configs
+   - among the (potentially highly-dynamic) set of data items, (grains, pillars, etc), available to a particular minion, only some will be regarded as attributes.
+   - Q: should attributes map to node groups, perhaps only 'read-only' attributes
+ - <<baseline vm>> :: a type of VM image, typically intended to be minimalistic while reflecting established best practices
+   - a "baseline vm" is a vm build type, alongside: the [[turnkey vm]] type
+ - <<turnkey vm>> :: a VM 
+   - a "turnkey vm" is a vm build type, alongside: the [[baseline vm]] type
+

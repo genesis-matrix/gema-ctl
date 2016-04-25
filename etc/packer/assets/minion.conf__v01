@@ -1,0 +1,32 @@
+##
+##
+##
+
+
+
+## NOTES
+##  - uses alternate top_state file at top_PROVISION.sls
+##  - Packer uses Salts implicit defaults for file_roots and pillar_roots
+
+
+
+file_client: local
+state_top: top_PROVISION.sls
+
+
+
+## Minion-Specific Grains
+grains:
+
+  onduty: True
+  machine_class: server
+  deploy_env: []
+
+  machine_role:
+    - genesis-master
+
+  PROVISION:
+    - test-no-op
+
+  
+

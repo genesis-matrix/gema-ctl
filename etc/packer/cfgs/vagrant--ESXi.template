@@ -1,0 +1,88 @@
+{
+    "variables": {
+	"tgt_consumer": "vagrant",
+	"tgt_virttype":   "vmware-iso",
+	"headless":   "{{user `headless`}}",
+	"uri_template":   "/Users/ngarber/.vault/uris/genesis-ctl/etc/packer/cfgs/vagrant--ESXi.template",
+	"uri_scripts":   "/Users/ngarber/.vault/uris/genesis-ctl/usr/packer/bin",
+	"uri_assets":    "/Users/ngarber/.vault/uris/genesis-ctl/etc/packer/assets",
+	"uri_scripts":   "/Users/ngarber/.vault/uris/genesis-ctl/usr/packer/bin",
+	"uri_configs":   "/Users/ngarber/.vault/uris/genesis-ctl/etc/packer/assets",
+	"mirror_rooturl":  "/Users/ngarber/.vault/uris/genesis-ctl/var/cache/packer/",
+	"mirror_relapath": "VMware-VMvisor-Installer",
+	"image_osname":    "",
+	"image_osrelease": "5.1.0.update01",
+	"image_osarch":    "1065491.x86_64",
+	"mirror_suffix":   ".iso",
+	"iso_checksum": "2cd15e433aaacc7638c706e013dd673a",
+	"iso_checksum_type": "md5",
+	"http_directory":  "/Users/ngarber/.vault/uris/genesis-ctl/etc/packer/assets",
+	"http_file":     "ESXi.kickstart",
+	"uri_outdir":    "/Users/ngarber/.vault/uris/genesis-ctl/tmp/build/",
+	"uri_outfile_pfx":    "packer-artifact-",
+	"uri_outfile_sfx":    ".box",
+	"harddisk_size": "80960",	
+	"memory":        "512",
+	"vcpus":         "2",
+	"compression": "6",
+	"uri_salt_roots": "/Users/ngarber/.vault/uris/genesis-ctl/srv/roots/base"
+    },
+    "builders": [
+	{
+	    "name": "esxi55",
+	    "vm_name": "esxi55",
+	    "vmdk_name": "esxi55-disk0",
+	    "type": "vmware-iso",
+	    "headless": "{{user `headless`}}",
+	    "disk_size": "{{user `harddisk_size`}}",
+	    "guest_os_type": "vmkernel5",
+	    "iso_url": "{{user `mirror_rooturl`}}{{user `mirror_relapath`}}{{user `image_osname`}}-{{user `image_osrelease`}}-{{user `image_osarch`}}{{user `mirror_suffix`}}",
+	    "iso_checksum": "{{user `iso_checksum`}}",
+	    "iso_checksum_type": "{{user `iso_checksum_type`}}",
+	    "ssh_username": "root",
+	    "ssh_password": "vagrant",
+	    "ssh_port": 22,
+	    "ssh_wait_timeout": "10000s",
+	    "http_directory": "{{user `http_directory`}}",
+	    "boot_wait": "5s",
+	    "vmx_data": {
+		"ethernet0.networkName": "VM Network",
+		"ethernet0.present": "TRUE",
+		"ethernet0.startConnected": "TRUE",
+		"ethernet0.virtualDev": "e1000",
+		"ethernet0.addressType": "generated",
+		"ethernet0.generatedAddressOffset": "0",
+		"ethernet0.wakeOnPcktRcv": "FALSE",
+		
+		"memsize": "4096",
+		"numvcpus": "2",
+		"vhv.enable": "TRUE"
+	    },
+	    "boot_command": [
+		"<tab>",
+		" ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `http_file`}}<enter><wait>"
+	    ],
+	    "shutdown_command": "esxcli system maintenanceMode set -e true -t 0 ; esxcli system shutdown poweroff -d 10 -r 'Packer Shutdown' ; esxcli system maintenanceMode set -e false -t 0"
+	}
+    ],
+    "provisioners": [
+	{
+	    "type": "file",
+	    "source": "/Users/ngarber/.vagrant.d/insecure_private_key",
+	    "destination": "/etc/ssh/keys-root/authorized_keys"
+	},
+	{
+	    "type": "shell",
+	    "scripts": [
+		"{{user `uri_scripts`}}/esxi-cloning-config.sh",
+		"{{user `uri_scripts`}}/esxi-vmware-tools.sh"
+	    ]
+	}
+    ],
+    "post-processors": [
+	{
+	    "type": "vagrant",
+	    "output": "{{user `uri_outfile`}}"
+	}
+    ]
+}

@@ -1,0 +1,210 @@
+# coding: utf-8
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+### Objectives:
+# - [X] VMs should answer to their Roster "handles" on a DHCP-assigned address
+# - [X] VMs should answer to their Roster "handles" + any Vagrant-specified domain suffixes for convenient network access from hypervisor host
+# - [X] Where Rosters use FQDNs for addressability, the VM should answer on a DHCP-assigned address
+# - [ ] Where Rosters use network address for address-ability, the address should be plumbed to the network device
+# - [-] Where a box recipe is available via packer, but is not built and registered by vagrant, vagrant will build the box using packer on reference
+###
+
+
+### NOTES:
+# - plugins: landrush, vagrant-triggers, vagrant-host-shell
+###
+
+
+### Example from ./etc/salt/roster
+# demo-minion-t1:
+#   host: 10.0.1.140
+#   user: vagrant
+#   passwd: vagrant
+#   sudo: True
+#   tty: True
+#   minion_opts:
+#     grains:
+#       machine_class: server
+#       onduty: True
+#       basebox_image: genesis-CentOS-6.7-x86_64
+#       deploy_env: LAB
+#       machine_roles: ['salt_minion', 'highstate_capable', 'vagrant_provisioned']
+###
+
+
+# Specify minimum Vagrant version and Vagrant API version
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+
+
+#+TODO: refactor the following variables out of this file and into a more appropriate place
+## User-Defined Variables
+default_provider_virttype = "vmware_desktop" # "virtualbox"
+default_basebox_image = "genesis-CentOSv6"
+domain_suffix_list = ["vagrant.test", "localdomain"]
+
+provider_virttype = (ENV['VAGRANT_DEFAULT_PROVIDER'] || default_provider_virttype)
+image_virttype_list = {"virtualbox" => "virtualbox-iso", ["vmware_desktop", "vmware_fusion", "vmware_workstation"] => "vmware-iso"}
+image_virttype = ""
+image_virttype_list.each { |k,v| image_virttype = v if k.include?(provider_virttype) }
+
+
+# Require YAML module
+require 'yaml'
+
+
+# Read YAML file with box details
+roster = YAML.load_file('etc/salt/roster')
+
+
+# Validate IP Addrs from strings
+require 'resolv'
+
+
+# Create boxes
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # set provider preference order, ie: Prefer VMware Fusion before VirtualBox
+  config.vm.provider "vmware_fusion"
+  config.vm.provider "virtualbox"
+  
+  # Plugin: vagrant-vlan, https://github.com/rtkwlf/vagrant-vlan (status: planning)
+  # Plugin: for DNS, landrush https://github.com/phinze/landrush
+  #+NB: add DHCP device last in order to capture Landrush's machine entries
+  #+NB: landrush will add it's own dhcp nic
+  #+NB: landrush guest-vm DNS resolution will fail to work
+  #       properly w/ more than one dhcp nic b/c requisite
+  #       config changes are spread between the multiple
+  #       devices
+  #+NB: (ex.) dig -p 10053 @localhost myhost.vagrant.dev        
+
+  if Vagrant.has_plugin? 'landrush'
+    #+NB: (ex.) dig -p 10053 @localhost myhost.vagrant.dev
+    config.landrush.enabled = true
+    config.landrush.guest_redirect_dns = true # serve/redir host DNS as well
+    config.landrush.tld = domain_suffix_list[0]
+  end
+
+
+  # Iterate through entries in YAML file
+  roster.each_pair do |hostname, value|
+    # parse YAML for roster entry
+    netnames            = Array.new
+    host_addr           = value['host']
+    machine_class       = value['minion_opts']['grains']['machine_class']       ||= "server"
+    basebox_image       = value['minion_opts']['grains']['basebox_image']       ||= default_basebox_image
+    onduty              = !!value['minion_opts']['grains']['onduty']              ||= false
+    deploy_env          = value['minion_opts']['grains']['deploy_env']          ||= "LAB"
+    machine_roles       = value['minion_opts']['grains']['machine_roles']       ||= []    
+    is_minion           = machine_roles.include?('salt_minion') ? true : false
+    is_syndic           = machine_roles.include?('salt_syndic') ? true : false
+    is_master           = machine_roles.include?('salt_master') ? true : false    
+    is_highstate_capable        = machine_roles.include?('highstate_capable') ? true : false
+    is_orchestrate_capable      = machine_roles.include?('orchestrate_capable') ? true : false
+    is_overstate_capable        = machine_roles.include?('overstate_capable') ? true : false
+    is_vagrant_provisioned      = machine_roles.include?('vagrant_provisioned') ? true : false
+
+    if machine_class.include?("server")
+
+
+      # instantiate vagrant vm object
+      config.vm.define hostname, autostart: onduty  do |machine|
+        #+WIP: provision by device type, default: server
+        machine.vm.box = basebox_image
+        machine.vm.hostname = hostname
+
+
+        # start apache on the guest after the guest starts
+        config.trigger.before :up, :stdout => true, :vm => machine.vm.hostname do
+          #+HINT: build vagrant box if it's absent and buildable
+          # tersely, `make vagrant-boxadd-#{image_virttype}--#{basebox_image} unless not make vagrant-boxchk-#{image_virttype}--#{basebox_image}.to_i`
+          #+TODO: this needs more safety and validity checks to prevent breaks in existing functionality
+          info "verifying availability of box: hypervisor=#{image_virttype}, image=#{basebox_image}"
+          info "   ... the VM image will be created if non-existent and buildable."
+          run "make genesis-preflightcheck-vm-present-#{image_virttype}--#{basebox_image}"
+          #+ORIG: below
+          # unless `make vagrant-boxchk-#{image_virttype}--#{basebox_image} 2>/dev/null`.to_i then
+          #   info "box '#{image_virttype}--#{basebox_image}' not registered, checking build templates for a buildable match ..."
+          #   if `make packer-list-images | grep -qs -e '#{image_virttype}' -e '#{basebox_image}' `.to_i then
+          #     info "local build scripts found for box: '#{image_virttype}--#{basebox_image}'"
+          #     unless `make vagrant-boxadd-#{image_virttype}--#{basebox_image}`.to_i then
+          #       error "unable to build: packer-artifact--#{image_virttype}--#{basebox_image}.box_vagrant"
+          #     end
+          #   end
+          # end
+
+        end
+
+
+        netnames         = {hostname => 'short'}
+        netnames['salt'] = 'short' if is_master
+        #+NTS: inverting this hash might make more sense
+        # Q: is 'host' an IP address?
+        if !!(host_addr =~ Resolv::IPv4::Regex) then
+          netnames[host_addr] = 'ipv4'
+        elsif !!(host_addr =~ Resolv::IPv6::Regex) then
+          netnames[host_addr] = 'ipv6'
+        else
+          # Q: suspected of being a FQDN?
+          netnames[host_addr] = host_addr.include?(".") ? 'fqdn' : 'short'
+        end
+
+
+        # Plugin: for DNS, landrush https://github.com/phinze/landrush
+        if Vagrant.has_plugin?('landrush') && config.landrush.enabled then
+          #+HINT: expand short names to fqdn's
+          netnames.select{|k, v| v == 'short'}.each do |netalias, nettype|
+            domain_suffix_list.each { |sfx| netnames[netalias + '.' + sfx] = 'fqdn' }  if ['short'].include?(nettype)
+          end
+        end
+        netnames.each do |netalias, nettype|
+          #+HINT: landrush.host { <host> <ip> | <alias> <host> }
+          if (netalias.upcase != hostname.upcase && ['short', 'fqdn'].include?(nettype) ) then  # machine entry
+            machine.landrush.host(netalias)
+          end
+          if ['ipv4', 'ipv6'].include?(nettype)  then  # static entry
+            #machine.vm.network "private_network", ip: netalias, :adapter=>3
+            #machine.landrush.host(hostname, netalias)
+          end
+        end
+
+
+        #+TODO: add VMware provider config
+        # provision by backing virt type, default: virtualbox
+        machine.vm.provider :virtualbox do |vb|
+          vb.name = hostname
+          vb.memory = 512
+        end
+
+        
+        machine.vm.provision :salt do |salt|
+          # install minion
+          salt.log_level = "all" # options: all, garbage, trace, debug, info, warning
+          salt.colorize = true 
+          #salt.pillar({"food_groupings" => { "apple" => "fruit", "broccoli" => "veggie"}})       
+          #+HINT: where the 'salt' CNAME is used by the master, the minion should join w/o config
+          salt.install_type = "stable"
+          #salt.run_highstate = true if is_highstate_capable
+
+          if is_syndic then
+          end
+
+          if is_master then
+            salt.install_master = true
+            # config.vm.provision "shell", inline: 'sudo salt-call --local state.single pkg.installed "" pkgs="[git,python-pygit2,salt-master]"'
+            # config.vm.provision "shell", inline: 'sudo salt-key -Ay'
+            # config.vm.provision "shell", inline: 'sudo cat /vagrant/etc/salt/conf.d/conf.master..scenario-genesis-vagrant.conf > /etc/salt/master ; systemctl restart salt-master '
+            # config.vm.provision "shell", inline: 'sudo salt-run fileserver.update'
+            # config.vm.provision "shell", inline: 'salt salt-master-t1 state.sls formula.salt.master'
+            #salt.orchestrations = true if is_orchestrate_capable
+            #salt.run_overstate = true if is_overstate_capable
+          end
+
+        end
+      end
+    end
+  end
+end
+
+

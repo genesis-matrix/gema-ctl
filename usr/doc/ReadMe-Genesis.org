@@ -1,0 +1,98 @@
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on Genesis Controller
+
+* synopsis
+ - Genesis Controller is a portable and scriptable workstation for modeling and reasoning about computer technology topics.
+* advisement
+ - Snippets and conventions from software development and system
+   administration projects were pulled into service for this
+   project. They may not always be an optimal fit.
+ - Efforts are made to: remove extraneous references, to maintain an
+   internal coherence, and to present a native feel.
+ - This is a work in progress. Pull requests are welcome.
+* chapters
+** Introduction to Genesis Controller
+:PROPERTIES:
+:ID: C1724956-2CEB-4E46-BFF5-43307D2258A3
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+     - [ ] Q: who is this for
+     - [ ] Q: what problem does it solve
+     - [ ] Q: why is it needed now
+   - info/notes
+     - srcs
+       #+CAPTION: reference list
+       | ! | title                                                             | url                                                                     | desc                      | rowid   |
+       |---+-------------------------------------------------------------------+-------------------------------------------------------------------------+---------------------------+---------|
+       | / |                                                                   |                                                                         |                           | <7>     |
+       | # | Using SaltStack to automate Vagrant provisioning BY AYMEN EL AMRI | http://eon01.com/blog/using-saltstack-to-automate-vagrant-provisioning/ | Inspiration and Prior Art | <<9F454D0A-9B6A-4F03-A4E4-A9FECE5E91D0>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Desired End State Description a/o Requirements Matrix
+     - on Design Goals, Assumptions, and Objectives
+       - specifically to enable operational agility
+       - using some tools and conventions
+   - Questions
+     - Q: who is this for
+     - Q: what problem does it solve
+     - Q: why is it needed now
+   - log
+
+** howto, Use this Repo
+:PROPERTIES:
+:ID: 4C708EA9-D4FA-4D3A-B0AC-D102320A2171
+:END:
+
+ - context ::
+   - [0/5] overview
+     - [ ] demo: event system via system alerting
+     - [ ] demo: state system via machine provisioning
+     - [ ] demo: state and targeting system via application a/o service provisioning
+     - [ ] demo: reactor system via security response to events
+     - [ ] capstone demo: orchestration system via auto-scaling
+   - info/notes
+     - srcs
+       #+NAME: 4C708EA9-D4FA-4D3A-B0AC-D102320A2171-srcs
+       #+CAPTION: reference list
+       | ! | title                       | url                             | desc | rowid   |
+       |   | title                       | url                             | desc | rowid   |
+       |---+-----------------------------+---------------------------------+------+---------|
+       | / |                             |                                 |      | <7>     |
+       | # | Defined Terms (aka Lexicon) | [[file:usr/doc/doc-LEXICON.org]]    |      | <<9C45F7F4-93B0-42E0-851C-238576E328AA>> |
+       | # | Project Roadmap             | [[file:usr/doc/doc-ROADMAP.org]]    |      | <<24B14A28-F316-4FA7-B7D7-28FB55C16FDD>> |
+       | # | reference: Saltstack        | [[file:usr/doc/ref-Salt.org]]       |      | <<4F6EADAD-8976-49E3-BD17-68924EA4EFF0>> |
+       | # | reference: Vagrant          | [[file:usr/doc/ref-Vagrant.org]]    |      | <<0BC5B967-C34A-45E2-83EC-FFD3714A6631>> |
+       | # | reference: Packer           | [[file:usr/doc/ref-Packer.org]]     |      | <<16CB2FF1-AD8E-4D27-B1CF-69573B04365B>> |
+       | # | reference: Virtualbox       | [[file:usr/doc/ref-Virtualbox.org]] |      | <<877CB068-08D1-4488-8FCD-E8E82EE16AD4>> |
+       | # | reference: VMware           | [[file:usr/doc/ref-VMware.org]]     |      | <<53439360-33A8-458F-96D7-4F028E6C3CCA>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Genesis Modules: SLS, PLR, PKI, CFG, et al
+       #+NAME: 3F5E0228-1367-4FCB-83F8-F4968943AB45
+       #+CAPTION: on Genesis Modules: SLS, PLR, PKI, CFG, et al
+       |   | key | desc            | uri_smod                   | uri_ctl_use       |
+       |---+-----+-----------------+----------------------------+-------------------|
+       | / |     |                 |                            |                   |
+       |   | SLS | Policy Store    | [[./mnt/git/genesis-sls-core]] | [[./srv/roots/base]]  |
+       |   | PLR | Variable Store  | [[./mnt/git/genesis-plr-core]] | [[./srv/pillar/base]] |
+       |   | PKI | Key Store       | n/a                        | n/a               |
+       |   | CFG | Config Store    | [[./mnt/git/genesis-cfg-core]] | [[./etc/salt/conf.d]] |
+       |   | CTL | Lab/Workstation |                            |                   |
+       - fork, blend, or replace these repos with your own efforts
+       - the submodule names follow the convention: =project_name= - =component= - =label=,
+         - such that you may experiment with your own personal 'sls' repo called =genesis-sls-foobar=
+         - the =core= label indicates that this is part of the set of upstream repos and intended to be publicly shared
+         - all =core= repos exist so be easily forked as a basis for private repos
+         - consider sharing "common" state, configs, a/o pillars with the upstream =core= repo by way of pull requests
+       - to replace the =genesis-sls-core= repo with your own
+         =genesis-sls-foobar= repo:
+         - add the =genesis-sls-foobar= submodule to
+           =./mnt/git/genesis-sls-foobar=, then
+         - update the symlink at =./mnt/git/genesis-sls= to point at
+           it
+         - in this way you can safely track and blend multiple upstream sources while easily switching among them
+   - Questions
+   - log

@@ -1,0 +1,94 @@
+### Makefile - Vagrant
+
+module_keys += vagrant
+.PHONY: vagrant-help vagrant-ssh vagrant-up vagrant-restart vagrant-down vagrant-clean vagrant-build vagrant-run
+
+vagrant-help:
+	## $@ ##
+	#+TODO: $@
+vagrant-setup:
+	## $@ ##
+vagrant-into:
+	## $@ ##
+	vagrant ssh
+vagrant-up:
+	## $@ ##
+	@vagrant up --parallel --provision
+vagrant-restart:
+	## $@ ##
+	@vagrant down && vagrant up
+vagrant-down:
+	## $@ ##
+	@vagrant halt
+vagrant-destroy: vagrant-down vagrant-dnsresolv-off
+	## $@ ##
+	-@vagrant destroy -f
+vagrant-dnsresolv-clear:
+	## $@ ##
+	-@vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
+vagrant-dnsresolv-off: vagrant-dnsresolv-clear
+	## $@ ##
+	-@vagrant landrush stop
+vagrant-wipe: vagrant-destroy
+	## $@ ## 
+	-@rm -rf $(project_root)/.vagrant
+
+vagrant-finish: vagrant-dnsresolv-off 
+	## $@ ##
+
+vagrant-die: 
+	## $@ ##
+
+vagrant-status-saltkeys:
+	## $@$ ##
+	-vagrant ssh SV-SALTMASTER-T1 -c 'sudo salt-key -L'
+
+vagrant-build: vagrant-up
+	## $@ ##
+vagrant-run: vagrant-up
+	## $@ ##
+vagrant-debug: vagrant-up
+	## $@ ##
+
+
+vagrant-boxadd-virtualbox-iso-%: packer-build-virtualbox-iso-%.box_vagrant
+	## $@ ## add new base box to Vagrant
+	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) --provider virtualbox #--box-version $(timestamp)
+
+
+vagrant-boxadd-vmware-iso--%: packer-build-vmware-iso--%.box_vagrant
+	## $@ ## add new base box to Vagrant
+	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) --provider vmware_desktop #--box-version $(timestamp)
+
+
+vagrant-boxadd-%: packer-build-%.box_vagrant
+	## $@ ## add new base box to Vagrant
+	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(subst .box_vagrant,,$(@:vagrant-boxadd-%=%)))) --provider $(word 2,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) #--box-version $(timestamp)
+
+
+vagrant-boxdel-vmware-iso--%:
+	## $@ ## check for and remove existing a/o prior boxes of provider 'vmware_desktop'
+	@vagrant box remove -f $(@:vagrant-boxdel-vmware-iso--%=%) --provider=vmware_desktop
+
+
+vagrant-boxdel-virtualbox-iso--%:
+	## $@ ## check for and remove existing a/o prior boxes of provider 'virtualbox'
+	@vagrant box remove -f $(@:vagrant-boxdel-virtualbox-iso--%=%) --provider=virtualbox
+
+
+vagrant-boxchk-vmware-iso--%:
+	## $@ ##  
+	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'vmware-iso' -e '$(subst vagrant-boxchk-vmware-iso--,,$@)' 
+
+vagrant-boxchk-virtualbox-iso--%:
+	## $@ ##
+	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'virtualbox-iso' -e '$(subst vagrant-boxchk-virtualbox-iso--,,$@)' 
+
+vagrant-boxlst:
+	@vagrant box list --box-info | awk '{print($$1, substr($$2,2, length(substr($$2,2)) -1))}'
+
+packer-artifact--vmware-iso--%: packer-artifact--vmware-iso--%.box_vagrant
+packer-artifact--vmware-iso--%.box_vagrant: $(BUILD_DIR)/packer-artifact--vmware-iso--%.box_vagrant
+$(BUILD_DIR)/packer-artifact--vmware-iso--%.box_vagrant:
+	## $@ ##
+

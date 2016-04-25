@@ -1,0 +1,45 @@
+{
+    "provisioners": [
+	{
+	    "type": "shell",
+	    "scripts": [
+		"{{user `uri_scripts`}}/cacerts-refresh.bash",
+		"{{user `uri_scripts`}}/linux--cfgs--unset-sudoer-require-tty.bash"
+	    ]
+	},
+	{
+	    "type": "salt-masterless",
+	    "skip_bootstrap": "false",
+	    "bootstrap_args": "-X",
+	    "no_exit_on_failure": "true",
+	    "local_state_tree": "{{user `uri_state_roots`}}",
+	    "local_pillar_roots": "{{user `uri_pillar_roots`}}",
+	    "minion_config": "{{user `uri_assets`}}/{{user `uri_minion_conf`}}"
+	},
+	{
+	    "type": "shell",
+	    "scripts": [
+		"{{user `uri_scripts`}}/hypervisor-integration-{{user `tgt_virttype`}}.bash",
+		"{{user `uri_scripts`}}/cleanup.bash"
+	    ]
+	}
+    ],
+    "builders": [
+	{
+	    "type": "digitalocean",
+	    "api_token": "{{user `digitalocean_pat`}}",
+	    "image": "{{user `digitalocean_image`}}",
+	    "region": "{{user `digitalocean_region`}}",
+	    "size": "{{user `digitalocean_size`}}",
+
+	    "private_networking": "{{user `digitalocean_privatenetworking`}}",
+	    "user_data": "{{user `digitalocean_userdata`}}",
+	    "droplet_name": "{{user `digitalocean_dropletname`}}",
+	    "snapshot_name": "{{user `digitalocean_dropletname`}}--{{timestamp}}",
+	    "state_timeout": "{{user `digitalocean_statetimeout`}}"
+
+
+
+	}
+    ]
+}

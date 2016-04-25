@@ -1,0 +1,72 @@
+#
+##
+
+#+EXAMPLE: echo 'my pass-phrase' | gpg --dir=~/.vault/uris/genesis-ctl/etc/salt/gpgkeys/ -e -a -r <KEYID>
+
+##
+##
+
+# localhost:
+#   host: 127.0.0.1
+#   port: 22
+#   user: root
+#   tty: True
+#   # using the default password
+#   passwd: example-password
+#   minion_opts:
+#     grains:
+#       machine_class: server
+#       onduty: False
+#       basebox_image: genesis-CentOSv6
+#       deploy_env: LAB
+
+##
+##
+
+
+  
+salt-test-s1:
+  host: salt-test-s1.vagrant.test
+  user: vagrant
+  minion_opts:
+    grains:
+      machine_class: server
+      onduty: True
+      basebox_image: genesis-CentOSv5
+      #+NB: 'machine_roles' temporarily vacated for testing purposes
+
+
+salt-test-s2:
+  host: salt-test-s2.vagrant.test
+  user: root
+  minion_opts:
+    grains:
+      machine_class: server
+      onduty: True
+      basebox_image: genesis-CentOSv6
+      machine_roles: ['salt_minion', 'highstate_capable']
+
+  
+salt-test-s3:
+  host: salt-test-s3.vagrant.test
+  user: vagrant
+  minion_opts:
+    grains:
+      machine_class: server
+      onduty: True
+      basebox_image: genesis-CentOSv7
+      machine_roles: ['salt_minion']    
+
+
+salt-master-t1:
+  host: SALT-MASTER-T1.vagrant.test
+  user: vagrant
+  minion_opts:
+    grains:
+      machine_class: server
+      onduty: True
+      basebox_image: genesis-CentOSv7
+      machine_roles: ['highstate_capable', 'orchestrate_capable', 'overstate_capable', 'salt_master', 'salt_minion']
+
+
+

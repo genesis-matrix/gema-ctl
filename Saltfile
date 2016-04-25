@@ -1,0 +1,29 @@
+#
+##
+###
+##
+#
+
+
+## http://docs.saltstack.com/en/latest/topics/ssh/#define-cli-options-with-saltfile
+## https://github.com/saltstack/salt/issues/9639
+salt-ssh:
+  config_dir: ./etc/salt
+  wipe_ssh: True
+  ssh_max_procs: 25
+  timeout: 2
+  no_host_keys: True
+  roster_file: ./etc/salt/roster
+
+salt:
+  config_dir: ./etc/salt
+
+salt-key:
+  config_dir: ./etc/salt
+
+salt-cloud:
+  config_dir: ./etc/salt
+
+salt-master:
+  config_dir: ./etc/salt
+

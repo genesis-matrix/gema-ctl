@@ -1,0 +1,9 @@
+[submodule "mnt/git/genesis-sls-core"]
+	path = mnt/git/genesis-sls-core
+	url = https://github.com/genesis-matrix/genesis-sls-core.git
+[submodule "mnt/git/genesis-plr-core"]
+	path = mnt/git/genesis-plr-core
+	url = https://github.com/genesis-matrix/genesis-plr-core.git
+[submodule "mnt/git/genesis-cfg-core"]
+	path = mnt/git/genesis-cfg-core
+	url = https://github.com/genesis-matrix/genesis-cfg-core.git

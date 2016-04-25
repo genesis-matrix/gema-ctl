@@ -1,0 +1,743 @@
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on Genesis // Packer
+
+* synopsis
+* advisement
+* chapters
+** Introduction to Packer
+:PROPERTIES:
+:ID: 6AE5E09F-5137-4582-B20B-2A9ACEC58004
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 6AE5E09F-5137-4582-B20B-2A9ACEC58004-srcs
+       #+CAPTION: reference list
+       | ! | title                      | url                                                 | desc | rowid   |
+       |   | title                      | url                                                 | desc | rowid   |
+       |---+----------------------------+-----------------------------------------------------+------+---------|
+       | / |                            |                                                     |      | <7>     |
+       | # | notes on Genesis // Packer | =./ref-Packer.org=                                  |      | <<eb6e9226-a569-42ba-bb8a-8b467b711452>> |
+       | # |                            | https://www.packer.io/docs/builders/vmware-iso.html |      | <<134313B8-23E3-4D4F-ADBE-6D0BC11A169E>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+     - on Packer Image Inventory
+       | / | os_family | os_distro | os_version | os_arch | cli_example                                     |
+       |---+-----------+-----------+------------+---------+-------------------------------------------------|
+       |   | RedHat    | CentOS    |          7 | x86_64  | make vagrant-boxadd-vmware-iso--CentOS-7-x86_64 |
+
+     - on Packer Provision a/o Deploy to vSphere Resources
+     - on Building Images from 'vmware-iso'
+     - on Building Images from 'virtualbox-iso'
+   - Questions
+   - log
+ - procedure :: install pre-requisites
+   - install =git=, =packer=, and optionally (probably) =vagrant= and =virtualbox=
+
+** howto, use Salt Provisioner
+:PROPERTIES:
+:ID: 600CB351-396A-40BC-8950-E3353D836C74
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 600CB351-396A-40BC-8950-E3353D836C74-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                            | desc | rowid   |
+       |   | title | url                                                                            | desc | rowid   |
+       |---+-------+--------------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                                |      | <7>     |
+       | # |       | https://docs.saltstack.com/en/latest/ref/configuration/minion.html#environment |      | <<318A4D62-834E-413C-A0FE-B87DCCF98022>> |
+       | # |       | https://www.packer.io/docs/provisioners/salt-masterless.html#minion_config     |      | <<CCAB95B5-3119-4EB6-BE77-8A7360BB3BBB>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+
+       - EM: cant use minion_conf w/ root or pillar configs
+         #+BEGIN_EXAMPLE
+           2016/04/17 09:07:49 ui error: 1 error(s) occurred:
+
+           ,* remote_state_tree and remote_pillar_roots only apply when minion_config is not used
+           2016/04/17 09:07:49 waiting for all plugin processes to complete...
+           1 error(s) occurred:
+
+           ,* remote_state_tree and remote_pillar_roots only apply when minion_config is not used
+         #+END_EXAMPLE
+
+     - on Provisioning a/ Configuration Design
+       - this scheme is projected to involve a couple control points (orchestrated from w/i the =minion.conf= file)
+       - principly, an alternate top file: =top_PROVISION.sls=
+       - a purpose-dedicated environment: PROVISION
+       - both of the above will only be available to minion w/ local checkouts of these trees, so IOW _never_ to production or any other "normal" minions
+       - though it's avoided in other places, the PROVISION environment will be grain driven and the grains will be loaded in w/ each minion.conf file
+       - in this way, the top_PROVISION.sls file will determine whats available in general, and the minion_conf file will determine whats activated for a particular minion
+       - the Salt provisioner uses =salt_boostrap.sh=, which uses =sudo=, which will error and fail if =requiretty= is set. Use =linux--cfgs--unset-sudoer-require-tty.bash= to disable =requiretty= in the script provisioner prior to invoking the salt provisioner.
+
+     - on Initial Understanding a/o Discovery
+       - when referencing paths to state and pillar trees
+         #+BEGIN_EXAMPLE
+           ...
+         	  {
+         	      "type": "salt-masterless",
+         	      "no_exit_on_failure": "true",
+         	      "local_state_tree": "{{user `uri_state_roots`}}",
+         	      "local_pillar_roots": "{{user `uri_pillar_roots`}}",
+         	      "temp_config_dir": "/tmp/.packer-transfer",
+         	      "remote_state_tree": "/tmp/.packer-salt-states",
+         	      "remote_pillar_roots": "/tmp/.packer-salt-pillar"
+         	  },
+           ...
+         #+END_EXAMPLE
+       - packer will fail if it encounters a file that it can't copy to the host
+         - scan for broken symlinks, sockets, etc
+       - bootstrap options info https://docs.saltstack.com/en/latest/topics/tutorials/salt_bootstrap.html
+
+    - Questions
+      - Q: should the =ENVIRONMENT= variable be set =minion= config passed from Packer to Salt
+      - Q: how can Packer safely incorporate state and pillar data, and appropriately discrete targeting
+        - Packer prohibits use of the =minion_conf= option in concert with the remote_state_tree or remote_pillar_roots options.         
+          #+BEGIN_QUOTE
+          minion_config (string) - The path to your local minion config file. This will be uploaded to the /etc/salt on the remote. This option overrides the remote_state_tree or remote_pillar_roots options.         
+          #+END_QUOTE
+        - placement of pillar tree w/i vm, defaults to =/srv/salt=
+          #+BEGIN_QUOTE
+            remote_state_tree (string) - The path to your remote state tree. default: /srv/salt. This option cannot be used with  remote_state_tree or remote_pillar_roots options.         
+          #+END_QUOTE
+        - placement of pillar tree w/i vm, defaults to =/srv/pillar=
+          #+BEGIN_QUOTE
+            remote_pillar_roots (string) - The path to your remote pillar roots. default: /srv/pillar. This option cannot be used with minion_config.
+          #+END_QUOTE
+
+    - log
+      - [2016-04-17 Sun]
+        - Packer doesn't permit use of variable options related to both
+          minion and pillar/roots
+        - it seems I need to chose between having the fleixibility I
+          needs, (via =minion.conf=), and the tidy-ness I crave, (via
+          =remote_state_tree= and =remote_pillar_roots=)
+        - the only truly via choice is to settle on the =minion.conf=
+          approach and attempt to make it as tidy as possible
+        - [2016-04-17 Sun 09:09] NGa will attempt to safely make use of the existing state and pillar trees in the provisioning process
+        - [2016-04-17 Sun 10:14] NGa observes =state_top= is actually a =master.conf= config, and is not available w/i the =minion.conf= file, which is where I really want to specify it
+        - NGa evaluates alternate means to accomplish the same degree of safety and isolations
+        - attempts to determine if the masterless-salt case supports embedding master configs in the minion config file
+        - =state_top= configs indicating that =top_PROVISION.sls= be used are written to the Packer VM using a shell script in a seperate step prior to the state run 
+        - [2016-04-17 Sun 20:20] after realizing that an error will result if a referenced environment is doesn't have a tree root URI set Salt will be unable to locate the top file
+        - NGa will use the "base" environment. The 'PROVISION' environment idea is being scrapped.
+        - The use of a seperate =top_state= will still provide the desired isolation and b/c base is defined by default it means a minimal minion.conf is still more of less achieved
+        - [2016-04-17 Sun 21:16] hold up, wait a minute, it looks like the =top_state: top_PROVISION.sls= will work when specified in the =minion.conf= file
+        - cool, it works!
+        - converting some post-execution scripts to states called from w/i =top_PROVISION.sls=
+          #+BEGIN_EXAMPLE
+          	  {
+          	      "type": "shell",
+          	      "execute_command": "echo 'vagrant' | sudo -S -E sh '{{.Path}}'",
+          	      "scripts": [
+          		  "{{user `uri_scripts`}}/hypervisor-integration-{{user `tgt_virttype`}}.bash",
+          		  "{{user `uri_scripts`}}/vagrant.bash",
+          		  "{{user `uri_scripts`}}/cleanup.bash",
+          		  "{{user `uri_scripts`}}/minimize.bash"
+          	      ]
+          	  }
+
+          #+END_EXAMPLE
+
+** info, Packer w/ DigitalOcean
+:PROPERTIES:
+:ID: 56A054E3-6688-4551-8220-CB46B914EA43
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+     - enables scripted creation of DO snapshot (convertable to live VM) using Packer
+   - info/notes
+     - srcs
+       #+NAME: 56A054E3-6688-4551-8220-CB46B914EA43-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                                                                                   | desc | rowid   |
+       |   | title | url                                                                                                                                   | desc | rowid   |
+       |---+-------+---------------------------------------------------------------------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                                                                                       |      | <7>     |
+       | # |       | https://www.digitalocean.com/community/tutorials/automated-provisioning-of-digitalocean-cloud-servers-with-salt-cloud-on-ubuntu-12-04 |      | <<BD018EFB-4794-491F-8DB1-4F3D26A4B1F8>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+   - Questions
+   - log
+ - procedure :: fix, EM:"unable to handshake" during image provisioning
+   - nb,
+     - try changing or even removing the =ssh_username= parameter, (https://github.com/mitchellh/packer/issues/788)
+ - procedure :: howto, get list of available "distribution" images
+   - (ex.) HTTP Request to list available DigitalOcean Images
+     #+CAPTION: HTTP Request to list available DigitalOcean Images
+     #+NAME: 3392EAA1-ACD5-47BC-B9C0-27DEB6BE629B
+     #+BEGIN_SRC http :pretty json :var DO_TOKEN="your-personal-access-token-here"
+     GET https://api.digitalocean.com/v2/images?type=distribution
+     Authorization: Bearer ${DO_TOKEN}
+     #+END_SRC
+
+     #+RESULTS[3326feaa53656328c15fc7e06a94d554c90d4aa3]: 3392EAA1-ACD5-47BC-B9C0-27DEB6BE629B
+     #+begin_example
+     {
+       "images": [
+         {
+           "id": 16469590,
+           "name": "991.2.0 (beta)",
+           "distribution": "CoreOS",
+           "slug": "coreos-beta",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-03-26T18:36:29Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 6372321,
+           "name": "5.10 x64",
+           "distribution": "CentOS",
+           "slug": "centos-5-8-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "ams1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2014-09-26T16:40:18Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 6372425,
+           "name": "5.10 x32",
+           "distribution": "CentOS",
+           "slug": "centos-5-8-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "ams1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2014-09-26T16:45:29Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 10144573,
+           "name": "10.1",
+           "distribution": "FreeBSD",
+           "slug": "freebsd-10-1-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "ams1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2015-01-20T20:04:34Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 12065782,
+           "name": "22 x64",
+           "distribution": "Fedora",
+           "slug": "fedora-22-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "ams1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2015-05-28T19:54:54Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 13321858,
+           "name": "10.2",
+           "distribution": "FreeBSD",
+           "slug": "freebsd-10-2-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "ams1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2015-08-28T19:14:36Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 14238961,
+           "name": "23 x64",
+           "distribution": "Fedora",
+           "slug": "fedora-23-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2015-11-03T17:35:54Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 14782899,
+           "name": "6.7 x32",
+           "distribution": "CentOS",
+           "slug": "centos-6-5-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2015-12-10T17:10:48Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 14782952,
+           "name": "6.7 x64",
+           "distribution": "CentOS",
+           "slug": "centos-6-5-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2015-12-10T17:19:06Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15611095,
+           "name": "8.3 x64",
+           "distribution": "Debian",
+           "slug": "debian-8-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-03T01:46:48Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15621569,
+           "name": "8.3 x32",
+           "distribution": "Debian",
+           "slug": "debian-8-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-03T14:48:27Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15621816,
+           "name": "15.10 x64",
+           "distribution": "Ubuntu",
+           "slug": "ubuntu-15-10-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-03T16:06:21Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15621817,
+           "name": "15.10 x32",
+           "distribution": "Ubuntu",
+           "slug": "ubuntu-15-10-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-03T16:06:25Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15943196,
+           "name": "12.04.5 x32",
+           "distribution": "Ubuntu",
+           "slug": "ubuntu-12-04-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-23T22:11:53Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15943270,
+           "name": "12.04.5 x64",
+           "distribution": "Ubuntu",
+           "slug": "ubuntu-12-04-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-23T22:19:12Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15943510,
+           "name": "14.04.4 x32",
+           "distribution": "Ubuntu",
+           "slug": "ubuntu-14-04-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-23T22:44:58Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 15943679,
+           "name": "14.04.4 x64",
+           "distribution": "Ubuntu",
+           "slug": "ubuntu-14-04-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-23T23:01:40Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 16040476,
+           "name": "7.2 x64",
+           "distribution": "CentOS",
+           "slug": "centos-7-0-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-02-29T21:17:07Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 16623283,
+           "name": "7.10 x32",
+           "distribution": "Debian",
+           "slug": "debian-7-0-x32",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-04-04T18:11:05Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         },
+         {
+           "id": 16623308,
+           "name": "7.10 x64",
+           "distribution": "Debian",
+           "slug": "debian-7-0-x64",
+           "public": true,
+           "regions": [
+             "nyc1",
+             "sfo1",
+             "nyc2",
+             "ams2",
+             "sgp1",
+             "lon1",
+             "nyc3",
+             "ams3",
+             "fra1",
+             "tor1"
+           ],
+           "created_at": "2016-04-04T18:18:11Z",
+           "min_disk_size": 20,
+           "type": "snapshot"
+         }
+       ],
+       "links": {
+         "pages": {
+           "last": "https://api.digitalocean.com/v2/images?page=2&type=distribution",
+           "next": "https://api.digitalocean.com/v2/images?page=2&type=distribution"
+         }
+       },
+       "meta": {
+         "total": 22
+       }
+     }
+#+end_example
+** Introduction to Packer Templates
+:PROPERTIES:
+:ID: 6AE5E09F-5137-4582-B20B-2A9ACEC58004
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 6AE5E09F-5137-4582-B20B-2A9ACEC58004-srcs
+       #+CAPTION: reference list
+       | ! | title | url | desc | rowid   |
+       |   | title | url | desc | rowid   |
+       |---+-------+-----+------+---------|
+       | / |       |     |      | <7>     |
+       |   |       |     |      |         |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+     - on Packer Provision a/o Deploy to vSphere Resources
+     - on Building Images from 'vmware-iso'
+     - on Building Images from 'virtualbox-iso'
+   - Questions
+   - log
+ - procedure :: install pre-requisites
+   - install =git=, =packer=, and optionally (probably) =vagrant= and =virtualbox=
+
+** howto, generate VMware ESXi image for Vagrant
+:PROPERTIES:
+:ID: 98706ea3-56b7-4434-8671-c01f0ef3e89d
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 98706ea3-56b7-4434-8671-c01f0ef3e89d-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                             | desc | rowid   |
+       |   | title | url                                                                             | desc | rowid   |
+       |---+-------+---------------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                                 |      | <7>     |
+       | # |       | http://www.metallic-badger.com/using-packer-deploy-vms-nested-esxi-environment/ |      | <<27C29AEA-A327-49E5-A9B8-A8B6B423E0DD>> |
+       | # |       | http://www.fabioarisi.com/?p=440                                                |      | <<CA07F1EC-F8B6-4933-B1AE-2E2F5EFA9FD8>> |
+       | # |       | http://sdorsett.github.io/2015/01/03/using-packer-on-centos/                    |      | <<6C5BAD3A-252A-4A94-B0C1-3AB815405D28>> |
+       | # |       | https://github.com/frapposelli/packer-templates                                 |      | <<759E39D9-4A02-4021-9E84-C1BB0EA94A62>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - add ESXi v5.5 box
+         : vagrant box add --name genesis-esxi tmp/build/packer-artifact--vmware-iso--VMware-VMvisor-Installer-5.1.0.update01-1065491.x86_64.box_vagrant                    
+   - Questions
+   - log
+
+** howto, use Packer on Mac OSX
+:PROPERTIES:
+:ID: 47563A37-61EE-40C3-A959-1E8E47413CC5
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 47563A37-61EE-40C3-A959-1E8E47413CC5-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                                        | desc | rowid   |
+       |   | title | url                                                                                        | desc | rowid   |
+       |---+-------+--------------------------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                                            |      | <7>     |
+       | # |       | http://superuser.com/questions/753765/why-not-having-tmp-default-permissions-to-777-in-osx |      | <<F86A7461-19ED-44FE-855F-02BA3248589B>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+   - Questions
+   - log
+ - procedure :: fix, EM: 
+   - nb, process =packer-vmx= often fails to exit cleanly, the process prevents future work
+   - it's sometimes necessary to =sudo killall vmware-vmx= to remove a hung process that prevents subsequent runs from succeeding. 
+ - procedure :: packer unable to download =salt-bootstrap.sh= to =/tmp=
+   - nb, when packer attempts to download the salt-boostrap script it can fail due to broken tmp dir permissions or an insufficiently recent ca-cert root bundle
+     #+BEGIN_EXAMPLE
+       2016/02/13 15:50:29 ui: ==> vmware-iso: Provisioning with Salt...
+       ==> vmware-iso: Provisioning with Salt...
+       2016/02/13 15:50:29 ui:     vmware-iso: Downloading saltstack bootstrap to /tmp/install_salt.sh
+           vmware-iso: Downloading saltstack bootstrap to /tmp/install_salt.sh
+           2016/02/13 15:50:29 packer-builder-vmware-iso: 2016/02/13 15:50:29 opening new ssh session
+           2016/02/13 15:50:29 packer-builder-vmware-iso: 2016/02/13 15:50:29 starting remote command: curl -L https://bootstrap.saltstack.com -o /tmp/install_salt.sh
+           2016/02/13 15:50:29 ui:     vmware-iso:
+               vmware-iso:
+          2016/02/13 15:50:29 ui:     vmware-iso: curl: (77) Problem with the SSL CA cert (path? access rights?)
+     	 vmware-iso: curl: (77) Problem with the SSL CA cert (path? access rights?)
+
+     #+END_EXAMPLE
+     : sudo chmod 1777 /private/tmp
+
+

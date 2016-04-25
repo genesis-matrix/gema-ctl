@@ -1,0 +1,17 @@
+##
+##
+## /srv/salt/master -
+##
+##
+
+
+## default_include & include
+## - include config files from an aux conf directory in the same
+##   directory as the source/origin config file
+## - we'll use this to de/activate configs by suffix
+## - default_include default-value: master.d/*.conf
+## - most config are now maintained in the include dir
+## - include default-value: <not-defined>
+#default_include: master.d/*.conf
+include: master.d/*.conf
+

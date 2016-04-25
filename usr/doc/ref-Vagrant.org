@@ -1,0 +1,67 @@
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on Genesis // Vagrant
+
+* synopsis
+* advisement
+* chapters
+** Introduction to Vagrant
+:PROPERTIES:
+:ID: 1D071C98-AF1C-41D3-8995-E2983DBCF23D
+:END:
+:LOGBOOK:
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 1D071C98-AF1C-41D3-8995-E2983DBCF23D-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                  | desc        | rowid   |
+       |   | title | url                                                  | desc        | rowid   |
+       |---+-------+------------------------------------------------------+-------------+---------|
+       | / |       |                                                      |             | <7>     |
+       | # |       | https://github.com/mitchellh/vagrant/pull/6473/files | partial fix | <<42D488C7-B7B9-4959-81DE-78FEA3029DA5>> |
+       | # |       | https://github.com/mitchellh/vagrant/issues/5973     |             | <<D4A0B71F-3449-42F8-9EF2-762BD42C433F>> |
+       | # |       |                                                      |             | <<549FD491-0546-4620-8B03-385542E261AF>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - start vagrant vm's w/ =vagrant up --provision <vm_name>=
+
+   - Questions
+   - log
+     - [2016-03-02 Wed]
+       - [2016-03-02 Wed 00:35]
+         #+BEGIN_SRC bash
+           brew uninstall --force brew-cask; brew untap phinze/cask; brew update; brew cleanup; brew cask cleanup
+           brew cask install vagrant
+         #+END_SRC
+       - [2016-03-02 Wed 14:19]
+         #+BEGIN_SRC bash
+         echo sahara landrush vagrant-vmware-fusion | xargs -n1 vagrant plugin install
+         vagrant plugin license vagrant-vmware-fusion ~/.vault/cfgs/vagrant-central/vagrant-plugin-vmware-fusion-license
+         #+END_SRC
+       - [2016-03-02 Wed 15:31] see https://github.com/vagrant-landrush/landrush/issues/165
+       - [2016-03-02 Wed 16:16] NGa muses that this may not be a plugin problem, but may be a vagrant box build problem b/c CentOSv6 works fully and CentOSv7 works except for HGFS. It's only CentOSv5 that triggers this problem. 
+
+ - procedure :: common operations
+   - vagrant test ping
+     #+BEGIN_SRC bash :dir ~/.extrefs/genesis-ctl :results drawer
+     vagrant ssh SV-SALTMASTER-T1 -c 'sudo salt-call --local test.ping'                                                                                  
+     #+END_SRC
+   - vagrant call master install state
+     #+BEGIN_SRC bash :dir ~/.extrefs/genesis-ctl :results drawer
+     vagrant ssh SV-SALTMASTER-T1 -c 'sudo salt-call --local --file-root=/vagrant/srv/roots/base state.sls config.apps.salt.master.install test=True'
+     #+END_SRC
+
+ - procedure :: setup vagrant
+   - install brew
+   - install vagrant and vagrant-manager
+   - install vagrant plugins: landrush (hostname/DNS), vagrant-triggers (command injection), sahara (snapshot/rollback)
+     #+BEGIN_SRC bash
+       echo landrush vagrant-triggers | xargs -n1 vagrant plugin install 
+       #vagrant plugin install vagrant-vlan # for VLAN handling
+       #vagrant plugin install vagrant-vbguest #
+     #+END_SRC
+
