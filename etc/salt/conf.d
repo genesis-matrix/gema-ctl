@@ -1,1 +1,0 @@
-../../mnt/git/genesis-cfg

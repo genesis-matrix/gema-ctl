@@ -6,6 +6,28 @@
 * advisement
  - by [2016-02-06 Sat], the =PySphere= module is deprecated in favor of the =pyvmomi= module
 * chapters
+** howto, Setup ESXi as Vagrant guest box
+:PROPERTIES:
+:ID: 8ADA316B-81BF-4A19-B0DC-9A0D2F3170A8
+:END:
+[2016-06-20 Mon 14:14]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-VMware.org::master@{2016-06-20}::13][git:~/.vault/uris/genesis-ctl/usr/doc/ref-VMware.org::master@{2016-06-20}::13]]
+ - context ::
+   - [/] overview
+   - info/notes
+     - srcs
+       #+NAME: 8ADA316B-81BF-4A19-B0DC-9A0D2F3170A8-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                        | desc | rowid   |
+       |   | title | url                                                                        | desc | rowid   |
+       |---+-------+----------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                            |      | <7>     |
+       | # |       | https://github.com/dougm/packer-esxi                                       |      | <<8AF16F86-765C-47AA-BCEA-89483EABBAF9>> |
+       | # |       | http://gosddc.com/articles/next-gen-vmware-automated-lab-esxi-with-packer/ |      | <<13B8F8D2-0B9D-4E45-866B-9776A460018C>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+   - Questions
+   - log
+
 ** fix, 'packages.vmware.com' cert not trusted w/ older or absent ca-cert stores
 :PROPERTIES:
 :ID: C39E5722-6112-44ED-9349-68FF10018132

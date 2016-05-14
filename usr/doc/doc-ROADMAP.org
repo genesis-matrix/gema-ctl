@@ -16,9 +16,24 @@
 ***** TODO External Variable/"Runtime" Pillar Source: Mongo, Consul, Etcd
 ***** TODO Change-Controlled States
 ***** TODO Change-Controlled Master config
-*** milestone: v0.3 					    :target_v00dot03:
+*** milestone: v0.4                                       :target_v00dot04:
+***** TODO Salt PKI git-sync and management
+*** milestone: v0.3                                       :target_v00dot03:
+***** TODO bootstrap Kubernetes as basis for service integration
+*** milestone: v0.2                                       :target_v00dot02:
 ***** TODO Quick Standup Rest API
-***** TODO Stable, Extensible, Rapidly deployable Salt Master config using Salt Formula w/ Genesis paradigm
+ - context ::
+   - [0/0] overview
+     - [ ]
+*** milestone: v0.1                                       :target_v00dot01:
+***** STARTED Stable, Extensible, Rapidly deployable Salt Master config using Salt Formula w/ Genesis paradigm
+ - context ::
+   - [3/5] overview
+     - [X] state targeting by pillar
+     - [X] git-backed "bootstrap" State and Pillar tree
+     - [X] first-glance documentation
+     - [ ] master gets un-prompted updates from State and Pillar git repos
+     - [ ] demo-able on demand in lab in Vagrant
 ** unfiled changes
    :PROPERTIES:
    :ID:       44290E69-DF96-4AB5-951D-31C1554DAF10

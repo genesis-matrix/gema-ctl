@@ -3,7 +3,7 @@
 #+TITLE: notes on Genesis Controller
 
 * synopsis
- - Genesis Controller is a portable and scriptable workstation for modeling and reasoning about computer technology topics.
+ - Genesis Controller is a portable and scriptable workstation for modeling, reasoning, and communicating about computer technology topics.
 * advisement
  - Snippets and conventions from software development and system
    administration projects were pulled into service for this
@@ -15,8 +15,6 @@
 ** Introduction to Genesis Controller
 :PROPERTIES:
 :ID: C1724956-2CEB-4E46-BFF5-43307D2258A3
-:END:
-:LOGBOOK:
 :END:
 
  - context ::
@@ -41,7 +39,6 @@
      - Q: what problem does it solve
      - Q: why is it needed now
    - log
-
 ** howto, Use this Repo
 :PROPERTIES:
 :ID: 4C708EA9-D4FA-4D3A-B0AC-D102320A2171
@@ -94,5 +91,357 @@
          - update the symlink at =./mnt/git/genesis-sls= to point at
            it
          - in this way you can safely track and blend multiple upstream sources while easily switching among them
+       - a Minion =grain=, (a key-value store) with key =provision_target= and value =vagrant= is added to each minion by Vagrant's provisioner and is used to record generally static attibutes.
+         - for example, to instruct that all minions bearing this attribute to respond to a "ping"
+           #+BEGIN_EXAMPLE
+             [vagrant@salt-master-d1 ~]$ sudo salt -C 'G@provision_target:vagrant' test.ping
+             salt-test-d1:
+             True
+             salt-test-d3:
+             True
+             salt-test-d2:
+             True
+             salt-master-d1:
+             True
+             [vagrant@salt-master-d1 ~]$ 
+           #+END_EXAMPLE
+
+   - Questions
+   - log
+
+** howto, setup the Enterprise-Ready Genesis Master
+:PROPERTIES:
+:ID: 21B8A401-906E-46E6-AC8B-0F62FF5B40E4
+:dir: /vagrant:genesis-ctl--salt-master-d1|sudo:genesis-ctl--salt-master-d1:.
+:END:
+
+ - context ::
+   - [0/2] overview
+     - [ ] fully pillar-based bootstrap
+     - [ ] config changes via CM (git)
+     -
+   - info/notes
+     - srcs
+       #+NAME: 21B8A401-906E-46E6-AC8B-0F62FF5B40E4-srcs
+       #+CAPTION: reference list
+       |!|title|url|desc|rowid|
+       | |title|url|desc|rowid|
+       |-|-----|---|----|-----|
+       |/|     |   |    | <7> |
+       |#|     |   |    |     |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - a master that is quickly bootstraped to be fully and dynamically manipulable
+       - treating all control data as git-backed data sources
+   - Questions
+   - log
+ - procedure :: (wip) setup a genesis master
+   - nb
+     - a 'vagrant-helper' bash script is used to simplify =SSH='ing to vagrant boxes
+   - start instance, (initially a vagrant VM)
+     #+BEGIN_SRC bash :results drawer :wrap EXAMPLE :dir . :var vm_instance="salt-master-d1"
+       vagrant up ${vm_instance} && vagrant status | grep ${vm_instance}
+     #+END_SRC
+
+     #+RESULTS:
+     #+BEGIN_EXAMPLE
+     Bringing machine 'salt-master-d1' up with 'vmware_fusion' provider...
+     ==> salt-master-d1: Running triggers before up...
+     ==> salt-master-d1: verifying availability of box: hypervisor=vmware-iso, image=genesis-CentOSv7
+     ==> salt-master-d1:    ... the VM image will be created if non-existent and buildable.
+     ==> salt-master-d1: Executing command "make genesis-preflightcheck-vm-present-vmware-iso--genesis-CentOSv7"...
+     ==> salt-master-d1: ## genesis-preflightcheck-vm-present-vmware-iso--genesis-CentOSv7 ## 
+     ==> salt-master-d1: ## vagrant-boxchk-vmware-iso--genesis-CentOSv7 ##  
+     ==> salt-master-d1: Command execution finished.
+     ==> salt-master-d1: Cloning VMware VM: 'genesis-CentOSv7'. This can take some time...
+     ==> salt-master-d1: Verifying vmnet devices are healthy...
+     ==> salt-master-d1: [landrush] Host DNS resolver config looks good.
+     ==> salt-master-d1: Preparing network adapters...
+     ==> salt-master-d1: Starting the VMware VM...
+     ==> salt-master-d1: Waiting for machine to boot. This may take a few minutes...
+         salt-master-d1: SSH address: 172.16.105.129:22
+         salt-master-d1: SSH username: vagrant
+         salt-master-d1: SSH auth method: private key
+         salt-master-d1: Warning: Connection refused. Retrying...
+         salt-master-d1: 
+         salt-master-d1: Vagrant insecure key detected. Vagrant will automatically replace
+         salt-master-d1: this with a newly generated keypair for better security.
+         salt-master-d1: 
+         salt-master-d1: Inserting generated public key within guest...
+         salt-master-d1: Removing insecure key from the guest if it's present...
+         salt-master-d1: Key inserted! Disconnecting and reconnecting using new SSH key...
+     ==> salt-master-d1: Machine booted and ready!
+     ==> salt-master-d1: Forwarding ports...
+         salt-master-d1: -- 22 => 2222
+     ==> salt-master-d1: Setting hostname...
+     ==> salt-master-d1: Configuring network adapters within the VM...
+     ==> salt-master-d1: [landrush] setting up machine's DNS to point to our server
+     ==> salt-master-d1: [landrush] network: :forwarded_port, {:guest=>22, :host=>2222, :host_ip=>"127.0.0.1", :id=>"ssh", :auto_correct=>true, :protocol=>"tcp"}
+     ==> salt-master-d1: [landrush] adding machine entry: salt-master-d1 => 172.16.105.129
+     ==> salt-master-d1: Waiting for HGFS kernel module to load...
+     ==> salt-master-d1: Enabling and configuring shared folders...
+         salt-master-d1: -- ~/.extrefs/genesis-ctl: /vagrant
+     ==> salt-master-d1: Running provisioner: salt...
+     Checking if salt-minion is installed
+     salt-minion was not found.
+     Checking if salt-call is installed
+     salt-call was not found.
+     Checking if salt-master is installed
+     salt-master was not found.
+     Bootstrapping Salt... (this may take a while)
+     Salt successfully installed!
+     run_overstate set to false. Not running state.overstate.
+     run_highstate set to false. Not running state.highstate.
+     orchestrate is nil. Not running state.orchestrate.
+     salt-master-d1            running (vmware_fusion)
+     #+END_EXAMPLE
+
+   - setup pre-req installs and config
+     #+BEGIN_SRC bash :results drawer :wrap EXAMPLE
+       hostname ; whoami
+       # verify =salt-minion= install
+       sudo yum install --color=never -y salt-minion
+       # verify all other package-install pre-reqs
+       sudo salt-call --no-color --local state.single pkg.installed "" pkgs="[salt-minion,salt-master,git,python-pygit2]"
+       # ensure the salt services are started
+       echo salt-minion salt-master |xargs -n1 sudo salt-call --no-color --local state.single service.running enable=True
+       # add the salt master's minion key, to make it managable as a minion
+       sleep 2
+       sudo salt-key --no-color -Ay || true
+       echo "# enable gitfs state tree"
+       sudo salt-call --local --no-color state.single file.managed "/etc/salt/master.d/conf.master.fileserver_backend..salt-formula.conf" contents='["## File Server Backend", "fileserver_backend:", "  - git", "  - roots"]'
+       echo "# add the salt-formula to the state tree"
+       sudo salt-call --local --no-color state.single file.managed "/etc/salt/master.d/conf.master.gitfs_remote..salt-formula.conf" contents='["gitfs_remotes:", "  - https://github.com/khaije1/salt-formula:", "    - mountpoint: salt://formula/salt", "    - root: salt"]'
+       echo "# setup the gitfs pillar, which will provide the data used by the salt-formula to bootstrap into a genesis-master"
+       salt-call --local --no-color state.single file.managed "/etc/salt/master.d/conf.master.gitfs_pillar..genesis-matrix-plr.conf" contents='["ext_pillar:", "  - git:", "    - master https://github.com/genesis-matrix/genesis-plr-core.git:", "      - env: base"]'
+       echo "# restart the master to up-take the new configs"
+       salt-call --local --no-color service.restart salt-master
+     #+END_SRC
+
+     #+RESULTS:
+     #+BEGIN_EXAMPLE
+     salt-test-d1
+     root
+     Loaded plugins: fastestmirror, security
+     Loading mirror speeds from cached hostfile
+      ,* base: mirror.netdepot.com
+      ,* epel: mirror.umd.edu
+      ,* extras: mirrors.advancedhosters.com
+      ,* updates: mirror.umd.edu
+     base                                                     | 1.1 kB     00:00     
+     epel                                                     | 3.6 kB     00:00     
+     extras                                                   | 2.1 kB     00:00     
+     saltstack                                                |  951 B     00:00     
+     updates                                                  | 1.9 kB     00:00     
+     Setting up Install Process
+     Package salt-minion-2016.3.1-1.el5.noarch already installed and latest version
+     Nothing to do
+     local:
+     ----------
+               ID: 
+         Function: pkg.installed
+           Result: False
+          Comment: The following packages failed to install/update: python-pygit2
+                   The following packages were installed/updated: git, salt-master
+                   The following packages were already installed: salt-minion
+          Started: 17:59:25.727264
+         Duration: 53536.002 ms
+          Changes:   
+                   ----------
+                   git:
+                       ----------
+                       new:
+                           1.8.2.3-1.el5
+                       old:
+                   perl-Error:
+                       ----------
+                       new:
+                           1:0.17010-1.el5
+                       old:
+                   perl-Git:
+                       ----------
+                       new:
+                           1.8.2.3-1.el5
+                       old:
+                   perl-TermReadKey:
+                       ----------
+                       new:
+                           2.30-4.el5
+                       old:
+                   salt-master:
+                       ----------
+                       new:
+                           2016.3.1-1.el5
+                       old:
+
+     Summary for local
+     ------------
+     Succeeded: 0 (changed=1)
+     Failed:    1
+     ------------
+     Total states run:     1
+     local:
+     ----------
+               ID: salt-minion
+         Function: service.running
+           Result: True
+          Comment: Service salt-minion is already enabled, and is running
+          Started: 18:00:19.964756
+         Duration: 975.603 ms
+          Changes:   
+                   ----------
+                   salt-minion:
+                       True
+
+     Summary for local
+     ------------
+     Succeeded: 1 (changed=1)
+     Failed:    0
+     ------------
+     Total states run:     1
+     local:
+     ----------
+               ID: salt-master
+         Function: service.running
+           Result: True
+          Comment: Service salt-master is already enabled, and is running
+          Started: 18:00:21.687419
+         Duration: 3056.027 ms
+          Changes:   
+                   ----------
+                   salt-master:
+                       True
+
+     Summary for local
+     ------------
+     Succeeded: 1 (changed=1)
+     Failed:    0
+     ------------
+     Total states run:     1
+     The key glob '*' does not match any unaccepted keys.
+     # enable gitfs state tree
+     local:
+     ----------
+               ID: /etc/salt/master.d/conf.master.fileserver_backend..salt-formula.conf
+         Function: file.managed
+           Result: True
+          Comment: File /etc/salt/master.d/conf.master.fileserver_backend..salt-formula.conf updated
+          Started: 18:00:31.528447
+         Duration: 8.133 ms
+          Changes:   
+                   ----------
+                   diff:
+                       New file
+
+     Summary for local
+     ------------
+     Succeeded: 1 (changed=1)
+     Failed:    0
+     ------------
+     Total states run:     1
+     # add the salt-formula to the state tree
+     local:
+     ----------
+               ID: /etc/salt/master.d/conf.master.gitfs_remote..salt-formula.conf
+         Function: file.managed
+           Result: True
+          Comment: File /etc/salt/master.d/conf.master.gitfs_remote..salt-formula.conf updated
+          Started: 18:00:32.138544
+         Duration: 7.834 ms
+          Changes:   
+                   ----------
+                   diff:
+                       New file
+
+     Summary for local
+     ------------
+     Succeeded: 1 (changed=1)
+     Failed:    0
+     ------------
+     Total states run:     1
+     # setup the gitfs pillar, which will provide the data used by the salt-formula to bootstrap into a genesis-master
+     local:
+     ----------
+               ID: /etc/salt/master.d/conf.master.gitfs_pillar..genesis-matrix-plr.conf
+         Function: file.managed
+           Result: True
+          Comment: File /etc/salt/master.d/conf.master.gitfs_pillar..genesis-matrix-plr.conf updated
+          Started: 18:00:32.959669
+         Duration: 10.58 ms
+          Changes:   
+                   ----------
+                   diff:
+                       New file
+
+     Summary for local
+     ------------
+     Succeeded: 1 (changed=1)
+     Failed:    0
+     ------------
+     Total states run:     1
+     # restart the master to up-take the new configs
+     local:
+         True
+     #+END_EXAMPLE
+
+
+   - kickstart genesis-matrix
+     #+BEGIN_SRC bash :results drawer :wrap EXAMPLE
+       echo "# imperatively refresh state tree from gitfs"
+       salt-run --no-color fileserver.update
+       echo "# imperatively refresh pillar tree from gitfs"
+       salt-call --no-color saltutil.refresh_pillar
+       sleep 2
+       echo "# apply the formula state"
+       salt-call --no-color state.apply formula.salt.master
+       echo ""
+     #+END_SRC
+
+     #+RESULTS:
+     #+BEGIN_EXAMPLE
+     # imperatively refresh state tree from gitfs
+     True
+     # imperatively refresh pillar tree from gitfs
+     local:
+         True
+     # apply the formula state
+     local:
+         Data failed to compile:
+     ----------
+         No matching sls found for 'formula.salt.master' in env 'base'
+
+     #+END_EXAMPLE
+
+** info, Targeted Service Integrations
+:PROPERTIES:
+:ID: BFF0A84D-BBFD-4ECE-B9B5-86DFA91CBA08
+:END:
+
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: BFF0A84D-BBFD-4ECE-B9B5-86DFA91CBA08-srcs
+       #+CAPTION: reference list
+       |!|title|url|desc|rowid|
+       | |title|url|desc|rowid|
+       |-|-----|---|----|-----|
+       |/|     |   |    | <7> |
+       |#|     |   |    |     |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - The purpose is to demonstrate a scaled-down but fully-realized Salt master with practical and representative service integrations.
+       - The listing of services to integrate with Salt:
+         |   |     |                           |                        |
+         |---+-----+---------------------------+------------------------|
+         | / |     |                           |                        |
+         |   | wip | logging                   | ELK                    |
+         |   | wip | realtime data source      | MongoDB                |
+         |   | wip | CM-controlled data source | Github/Gitolite/GitLab |
+         |   | wip | operating console, WebGUI | Saltpad                |
+         |   | wip | alerting                  | Pushover               |
+         |   | wip | chatops                   | ErrBot                 |
+         |   | wip |                           | kubernetes             |
+         |   | wip |                           | docker/rocket          |
    - Questions
    - log

@@ -32,7 +32,9 @@ vagrant-dnsresolv-off: vagrant-dnsresolv-clear
 vagrant-wipe: vagrant-destroy
 	## $@ ## 
 	-@rm -rf $(project_root)/.vagrant
-
+vagrant-purge: 
+	## $@ ## delete all "genesis-" basebox images registered to vagrant
+	@vagrant box list | sed -ne '/There are no installed boxes/! s/^\(genesis-[^[:space:]]*\) .*$$/\1/p' |xargs -n1 vagrant box remove -f --all 
 vagrant-finish: vagrant-dnsresolv-off 
 	## $@ ##
 

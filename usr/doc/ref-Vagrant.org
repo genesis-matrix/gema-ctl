@@ -54,6 +54,10 @@
      #+BEGIN_SRC bash :dir ~/.extrefs/genesis-ctl :results drawer
      vagrant ssh SV-SALTMASTER-T1 -c 'sudo salt-call --local --file-root=/vagrant/srv/roots/base state.sls config.apps.salt.master.install test=True'
      #+END_SRC
+   - add personal pubkey to vagrant boxes after start up
+     #+BEGIN_SRC bash
+     cat ~/.ssh/id_rsa.pub | vagrant ssh salt-master-d1 -c 'cat >> ~/.ssh/authorized_keys'
+     #+END_SRC
 
  - procedure :: setup vagrant
    - install brew

@@ -141,6 +141,29 @@
      - Q: how to organize pillars for: A/B testing, dynamic/layered pillars: Consul, LDAP
    - log
 
+** on Packer VM Provisioning w/ Salt
+:PROPERTIES:
+:ID: DF267F2E-F845-4294-B025-C464E0F4F45B
+:END:
+:LOGBOOK:
+:END:
+[2016-06-20 Mon 16:55]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-06-20}::145][git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-06-20}::145]]
+ - context ::
+   - [/] overview
+   - info/notes
+     - srcs
+       #+NAME: DF267F2E-F845-4294-B025-C464E0F4F45B-srcs
+       #+CAPTION: reference list
+       | ! | title                   | url                                                    | desc | rowid   |
+       |   | title                   | url                                                    | desc | rowid   |
+       |---+-------------------------+--------------------------------------------------------+------+---------|
+       | / |                         |                                                        |      | <7>     |
+       | # | sudo should be optional | https://github.com/saltstack/salt-bootstrap/issues/880 |      | <<24BF37B7-4D64-4B16-8031-9DA0F7E53E3B>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+   - Questions
+   - log
+
 ** on Salt CLI, Interactive a/o Imperative Operation w/ the =salt= CLI a/ the =salt-ssh= subsystem
  - context ::
    - info/notes
@@ -450,7 +473,7 @@
        local:
            Created Private Key: "/etc/pki/tls/certs/localhost.key." Created Certificate: "/etc/pki/tls/certs/localhost.crt."
      #+END_EXAMPLE
-   - 
+
 ** on Salt States a/o Formulae
 :PROPERTIES:
 :ID: F71FCF5C-B465-4BAC-80C0-A892A928FFB9
@@ -498,6 +521,32 @@
          - context
    - Questions
    - log
+*** Leveraging the Saltstack Formula for Salt
+:PROPERTIES:
+:ID: 53E93EB9-A4C6-4663-886B-97F846CCEB43
+:END:
+:LOGBOOK:
+CLOCK: [2016-05-30 Mon 15:51]--[2016-05-30 Mon 15:52] =>  0:01
+:END:
+[2016-05-30 Mon 15:51]
+[[git:~/.vault/uris/genesis-ctl-core/usr/doc/ref-Salt.org::master@{2016-05-30}::501][git:~/.vault/uris/genesis-ctl-core/usr/doc/ref-Salt.org::master@{2016-05-30}::501]]
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 53E93EB9-A4C6-4663-886B-97F846CCEB43-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                | desc | rowid   |
+       |   | title | url                                                | desc | rowid   |
+       |---+-------+----------------------------------------------------+------+---------|
+       | / |       |                                                    |      | <7>     |
+       | # |       | https://github.com/saltstack-formulas/salt-formula |      | <<85B8B08C-A9AF-4E69-9922-D202D5A2E2C0>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+   - Questions
+     - Q: does setting up a master w/ =salt-formula='s =clean= option remove minion keys
+       - Q: No. Existing minion keys are preserved.
+   - log
+
 *** Refactoring for Modular a/ DRY States
  - context ::
    - info/notes
@@ -582,12 +631,12 @@
              # accept key
              salt-key -Ay
              # install software pre-reqs
-             salt salt-master-t1 state.single pkg.installed "" pkgs="[git,python-pygit2,salt-minion,salt-master]"
+             salt-call --local state.single pkg.installed "" pkgs="[git,python-pygit2,salt-minion,salt-master]"
              # add bootstrap configs to /etc/salt/master.d if needed
              # restart salt-master, update file cache
-             systemctl restart salt-master ; sleep 5 ; salt-run fileserver.update
+             salt-call --local service.restart salt-master ; sleep 5 ; salt-run fileserver.update
              # apply formula-driven state
-             salt salt-master-t1 state.sls salt.master
+             salt salt-master-t1 state.sls formula.salt.master
            #+END_SRC
          - nb, expect the master to need reboots after certain changes
          - after running =state.sls salt.master= the files originally in =master.d/.= dir were removed and new files added in place
@@ -648,7 +697,7 @@
 [2016-03-19 Sat 20:22]
 [[git:~/.vault/uris/genesis-ctl/ReadMe-Genesis.org::master@{2016-03-19}::1374][git:~/.vault/uris/genesis-ctl/ReadMe-Genesis.org::master@{2016-03-19}::1374]]
  - context ::
-   - [/] overview
+   - [0/0] overview
    - info/notes
      - srcs
        #+NAME: 41C783DD-358D-4B0A-81F5-5785F2C3A322-srcs
@@ -666,6 +715,30 @@
        | # |                            | https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.pillar.html           |                             | <<509D9D55-11A6-4672-9089-6DA8BFC58AD2>> |
        | # | irtnog/salt-pillar-example | https://github.com/irtnog/salt-pillar-example                                           | IRTNOG Salt Pillar Examples | <<C14B18BF-4214-4F30-B3D6-9EAB538E07B9>> |
        #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+     - on Generalized Objects and Attributes
+       #+CAPTION: Objects
+       #+NAME: 0B4776CA-985A-40B3-9118-8D5A3BB0B4F6
+       |   |         |
+       |---+---------|
+       | / |         |
+       |   | person  |
+       |   | machine |
+       |   | service |
+
+       #+CAPTION: Attributes
+       #+NAME: 6C69BF8C-E229-4B66-83DD-A67EDB729FF0
+       |   |          |
+       |---+----------|
+       | / |          |
+       |   | name     |
+       |   | chassis  |
+       |   | class    |
+       |   | role     |
+       |   | duty     |
+       |   | kpi      |
+       |   | sla      |
+       |   | memberof |
    - Questions
    - log
 ** on Salt Cloud
@@ -1148,5 +1221,4 @@
        #+END_SRC
      - clone a VM
        - (nb) perhaps this could be used to clone from templates and subsequently configured a/o customized via the console-oriented guest OS file manip
-
 

@@ -3,7 +3,7 @@
 
 export uri_configs   := $(project_root)/etc/packer/cfgs
 export uri_assets    := $(project_root)/etc/packer/assets
-export uri_scripts   := $(project_root)/usr/packer/bin
+export uri_scripts   := $(project_root)/srv/roots/base/MISC/PROVISION/assets/exe_script
 
 export PACKER_URI_OUTFILE_PFX ?=    packer-artifact--
 export PACKER_URI_OUTFILE_SFX ?=    .box
@@ -16,28 +16,13 @@ sfx_variable := .vars
 PACKER_TEMPLATES = $(foreach var,$(patsubst %$(sfx_template),%,$(subst /,-,$(patsubst $(uri_configs)/%,%,$(shell find $(uri_configs) -iname "*$(sfx_template)")))),$(uri_configs)/$(var))
 PACKER_VARIABLES = $(patsubst %$(sfx_variable),%,$(subst /,-,$(patsubst $(uri_configs)/%,%,$(shell find $(uri_configs) -iname "*$(sfx_variable)"))))
 
-# default/example build config variables
-#+ORIG:removal-candidate:export PACKER_VIRTTYPE ?= virtualbox-iso
-#+ORIG:removal-candidate:export PACKER_MIRROR_ROOTURL ?=
-#+ORIG:removal-candidate:export PACKER_MIRROR_ROOTURL ?=  http://mirrors.kernel.org/centos
-#+ORIG:removal-candidate:export PACKER_MIRROR_RELAPATH ?= /6/isos/x86_64/
-#+ORIG:removal-candidate:export PACKER_IMAGE_OSNAME ?=    CentOS
-#+ORIG:removal-candidate:export PACKER_IMAGE_OSRELEASE ?= 6.7
-#+ORIG:removal-candidate:export PACKER_IMAGE_OSARCH ?=    x86_64
-#+ORIG:removal-candidate:export PACKER_MIRROR_SUFFIX ?=   -bin-DVD1.iso
-#+ORIG:removal-candidate:export PACKER_ISO_CHECKSUM ?= 7bb8c1c23a4fdef93e6f0a6347d570e5764d0b38
-#+ORIG:removal-candidate:export PACKER_ISO_CHECKSUM_TYPE ?= sha1
-#+ORIG:removal-candidate:export PACKER_URI_OUTDIR ?= $(BUILD_DIR)
-#+ORIG:removal-candidate:export PACKER_URI_OUTFILE_PFX ?=    packer-artifact--
-#+ORIG:removal-candidate:export PACKER_URI_OUTFILE_SFX ?=    .box
-#+ORIG:removal-candidate:export PACKER_MEMORY ?=        512
-#+ORIG:removal-candidate:export PACKER_VCPUS ?=         1
 
 
 #
 ## build config functions
 fn_buildinfo_from_uri = $(shell echo "$(notdir $@)" | sed -ne 's/$(PACKER_URI_OUTFILE_PFX)\(.*\)--\(.*\)$(PACKER_URI_OUTFILE_SFX)_\(.*\)/\1 \2 \3/p')
 fn_build_label = $(word 2,$(call fn_buildinfo_from_uri,$1))
+#fn_build_target = $(
 fn_build_virttype = $(word 1,$(call fn_buildinfo_from_uri,$1))
 fn_build_consumer = $(word 3,$(call fn_buildinfo_from_uri,$1))
 fn_var_basename = $(patsubst $(PACKER_URI_OUTFILE_PFX)%,%,$(patsubst %$(sfx_variable),%,$(notdir $(1))))
@@ -93,9 +78,9 @@ packer-info-%:
 
 
 packer-list-images:
-	## $@ ## list of build-able packer images. To build append the build name after: 'make packer-build-'. Note the type designators, such as: 'vagrant', and 'vmware-iso'. 
-	@echo "builds:  $(foreach var,$(PACKER_VARIABLES),$(space)$(space)$(call fn_var_basename,$(var)))"
-	@echo
+	## $@ ## list of build-able packer images. To build append the build name after: 'make packer-build-' or 'make vagrant-boxadd-'. Note the provider designators, such as: 'vagrant', and 'vmware-iso', and the consumer designators, such as: 'vagrant', and 'digitalocean'.
+	@echo "$(foreach var,$(PACKER_VARIABLES),$(word 2,$(subst --,$(space),$(call fn_var_basename,$(var))))--$(word 3,$(subst --,$(space),$(call fn_var_basename,$(var))))$(PACKER_URI_OUTFILE_SFX)_$(call fn_hypervisor_from_var,$(var)))"
+
 
 packer-clean:
 	## $@ ##
