@@ -1,6 +1,6 @@
-[submodule "mnt/git/genesis-sls-core"]
-	path = mnt/git/genesis-sls-core
-	url = https://github.com/genesis-matrix/genesis-sls-core.git
-[submodule "mnt/git/genesis-plr-core"]
-	path = mnt/git/genesis-plr-core
-	url = https://github.com/genesis-matrix/genesis-plr-core.git
+[submodule "mnt/git/gema-sls-core"]
+	path = mnt/git/gema-sls-core
+	url = https://github.com/genesis-matrix/gema-sls-core.git
+[submodule "mnt/git/gema-plr-core"]
+	path = mnt/git/gema-plr-core
+	url = https://github.com/genesis-matrix/gema-plr-core.git

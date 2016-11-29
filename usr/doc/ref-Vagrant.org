@@ -28,6 +28,33 @@
        #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
      - on Initial Understanding a/o Discovery
        - start vagrant vm's w/ =vagrant up --provision <vm_name>=
+     - on Vagrant Provider Selection
+       - =virtualbox= is used by default, but =vmware_fusion= can be selected by setting an environment variable
+         #+BEGIN_EXAMPLE
+           >$  vagrant status
+           Current machine states:
+
+           salt-test-d1              not created (virtualbox)
+           salt-test-d2              not created (virtualbox)
+           salt-test-d3              not created (virtualbox)
+           salt-master-d1            not created (virtualbox)
+
+           This environment represents multiple VMs. The VMs are all listed
+           above with their current state. For more information about a specific
+           VM, run `vagrant status NAME`.
+
+           >$ env VAGRANT_DEFAULT_PROVIDER='vmware_fusion' vagrant status
+           Current machine states:
+
+           salt-test-d1              not created (vmware_fusion)
+           salt-test-d2              not created (vmware_fusion)
+           salt-test-d3              not created (vmware_fusion)
+           salt-master-d1            not created (vmware_fusion)
+
+           This environment represents multiple VMs. The VMs are all listed
+           above with their current state. For more information about a specific
+           VM, run `vagrant status NAME`.
+         #+END_EXAMPLE
 
    - Questions
    - log
@@ -39,7 +66,7 @@
          #+END_SRC
        - [2016-03-02 Wed 14:19]
          #+BEGIN_SRC bash
-         echo sahara landrush vagrant-vmware-fusion | xargs -n1 vagrant plugin install
+         echo landrush vagrant-vmware-fusion | xargs -n1 vagrant plugin install
          vagrant plugin license vagrant-vmware-fusion ~/.vault/cfgs/vagrant-central/vagrant-plugin-vmware-fusion-license
          #+END_SRC
        - [2016-03-02 Wed 15:31] see https://github.com/vagrant-landrush/landrush/issues/165
@@ -68,4 +95,14 @@
        #vagrant plugin install vagrant-vlan # for VLAN handling
        #vagrant plugin install vagrant-vbguest #
      #+END_SRC
+
+ - procedure :: (wip) howto, whitelist the landrush process w/ the MacOSX application firewall
+   - nb
+     - by whitelisting the landrush executable this will prevent the firewall prompts while allowing for normal operation
+
+     - landrush is a pure ruby daemon so we'll need to add the ruby binary to the whitelist
+
+     - landrush uses the embedded ruby binary that ships w/ Vagrant, not the system ruby.
+   - add the landrush ruby binary path to the MacOSX firewall, =/opt/vagrant/embedded/bin/ruby=
+
 

@@ -1,0 +1,22 @@
+## Customize checkout
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init # use submodules
+
+## Customize dependencies
+dependencies:
+  pre:
+    - apt-get install virtualbox
+    - apt-get install packer
+    - apt-get install vagrant
+
+## Customize test commands
+test:
+  override:
+    - make online
+  post:
+    - make test
+        environment:
+          DEFAULT_VAGRANT_PROVIDER: virtualbox
+

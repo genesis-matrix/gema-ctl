@@ -1,7 +1,0 @@
-
-
-salt-call --local state.single file.managed /etc/salt/master.d/salt-formula.conf contents='["gitfs_remotes:", "  - https://github.com/saltstack-formu
-las/salt-formula:", "    - mountpoint: salt://formula/salt", "    - root: salt"]' test=True
-
-salt-call --local state.single git.latest "repo" target="/etc/salt/conf.d" makedir
-

@@ -1,0 +1,55 @@
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on GeMa // TODOs
+* synopsis
+* advisement
+* TODO tasklist-gema
+** unsorted
+*** TODO support multiple pillar dir-roots per environment
+:PROPERTIES:
+:ID: 219206C2-3F54-4036-9B28-AE859B24856C
+:END:
+:LOGBOOK:
+- Refiled on [2016-11-22 Tue 17:40]
+CLOCK: [2016-11-22 Tue 17:39]--[2016-11-22 Tue 17:40] =>  0:01
+:END:
+[2016-11-22 Tue 17:39]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/TODO.org::master@{2016-11-22}::8][git:~/.vault/uris/genesis-ctl/usr/doc/TODO.org::master@{2016-11-22}::8]]
+ - context ::
+   - [0/2] overview
+     - [ ] organize pillar to support multiple dir-roots per environment
+     - [ ] establish conventions for future use
+   - info/notes
+     - srcs
+       #+NAME: 219206C2-3F54-4036-9B28-AE859B24856C-srcs
+       #+CAPTION: reference list
+       |!|title|url|desc|rowid|
+       | |title|url|desc|rowid|
+       |-|-----|---|----|-----|
+       |/|     |   |    | <7> |
+       |#|     |   |    |     |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+     - on Candidate Solutions
+       - take 1
+         - any gema-managed pillar source should create a subdirectory in =/srv/pillar/.lookaside=
+         - in the case of the default =/srv/pillar/base=, a symlink from =/srv/pillar/.lookaside/gema-core-base= (format: =<org>-<title>-<env>=) will link to =/srv/pillar/base=
+           - this has the advantage that it's easy to substitute something else in for testing or whatever but there is still a reliably useful 'core' available for any non-proprietary data
+         - additional pillar roots can be cloned to their respective subdirs in the =/srv/pillar/.lookaside= directory
+         - to activate any auxilliary pillar roots from the lookaside dir, (except for =gema-plr-core=), each subdir's full path (ex. =/srv/pillar/lookaside/example-demo-base=) should be added to the pillar roots config (ref: https://docs.saltstack.com/en/latest/ref/configuration/master.html#std:conf_master-pillar_roots)
+   - Questions
+   - log
+*** TODO document workflow: Salt CLI restricted by sudo to specific commands a/ nodegroups
+** Misc-Overhead
+*** misc meeting a/o correspondence
+*** work record maintenance
+*** work tool maintenance
+*** Administrative/Policy Prep/Compliance
+* chapters
+* extrefs
+** reports
+** defined-terms
+** secrets                                                        :noexport:
+** bibliography
+** footnotes
+[fn:0] simple example of a footnote, delete at your leisure

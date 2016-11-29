@@ -1,0 +1,52 @@
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on Genesis Matrix // Git
+* synopsis
+* advisement
+* chapters
+** Introduction to Git for GeMa
+** info, =genesis-ctl= as the GeMa Controller
+:PROPERTIES:
+:ID: B04DBDA5-A0BA-45B1-BFB1-881999560E54
+:END:
+:LOGBOOK:
+:END:
+[2016-10-25 Tue 18:12]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-Git.org::master@{2016-10-25}::8][git:~/.vault/uris/genesis-ctl/usr/doc/ref-Git.org::master@{2016-10-25}::8]]
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: B04DBDA5-A0BA-45B1-BFB1-881999560E54-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                                 | desc | rowid   |
+       |   | title | url                                                                                 | desc | rowid   |
+       |---+-------+-------------------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                                     |      | <7>     |
+       | # |       | https://git-scm.com/book/en/v2/Git-Internals-Transfer-Protocols                     |      | <<D4E675E2-86D0-4278-B37A-ADBF65C4BDED>> |
+       | # |       | https://git-scm.com/docs/git-config                                                 |      | <<6A99E42A-FAD6-499B-B82A-948787E7582C>> |
+       | # |       | https://git-scm.com/docs/git-clone                                                  |      | <<94510583-B23F-4344-99E9-EBCDB7E6F15D>> |
+       | # |       | http://stackoverflow.com/questions/1125476/retrieve-a-single-file-from-a-repository |      | <<F943AF41-D6DB-4F0B-977E-10BC74478E2C>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - the =genesis-ctl= project is the pace car, indicating the source and version
+       - the version and source for the =plr=, =sls=, and optionally =pki= component
+       - this facilitates testing and controls the deployed version
+     - on Technical Overview of the Component Version Control
+       - the following descriptions apply to a GeMa master, unless otherwise stated
+       - checkout the =genesis-ctl= repo as =/var/cache/genesis-matrix/ctl.git=
+	 #+BEGIN_SRC bash :results drawer :wrap EXAMPLE :var uri_git_local="/var/cache/genesis-matrix/ctl.git" uri_git_remote="https://github.com/genesis-matrix/genesis-ctl.git"
+	 mkdir -p /var/cache/genesis-matrix
+	 git clone --bare --depth 1 --single-branch --recursive --shallow-submodules -- ${uri_git_remote} ${uri_git_local}
+
+	 #+END_SRC
+   - Questions
+   - log
+
+* extrefs
+** reports
+** defined-terms
+** secrets                                                        :noexport:
+** bibliography
+** footnotes
+[fn:0] simple example of a footnote, delete at your leisure

@@ -1,0 +1,53 @@
+## environment
+
+language: generic
+matrix:
+  include:
+    - os: osx
+    - sudo: required
+    - env: DEFAULT_VAGRANT_PROVIDER=virtualbox
+  allow_failures:
+    - os: linux
+    - sudo: required
+    - env: DEFAULT_VAGRANT_PROVIDER=virtualbox
+
+# 1. Install apt addons
+addons:
+  apt:
+    packages:
+      - virtualbox
+      - vagrant
+      - jq
+      - remake
+
+# 2. before_install
+# 3. install
+install:
+  # OSX
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]] ;then brew tap caskroom/cask ;fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]] ;then brew update ;fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]] ;then brew upgrade ;fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]] ;then echo packer remake jq remarshal brew-cask-completion packer-completion vagrant-completion bash-completion |xargs -n1 brew install  ;fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]] ;then echo virtualbox vagrant vagrant-manager |xargs -n1 brew cask install ;fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]] ;then echo virtualbox vagrant vagrant-manager packer remake jq remarshal brew-cask-completion packer-completion vagrant-completion bash-completion |xargs -n1 apt install -y ;fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]] || [[ "${TRAVIS_OS_NAME}" == "osx" ]] ;do echo landrush vagrant-triggers | xargs -n1 vagrant plugin install ;fi
+
+# 4. before_script
+# 5. script
+script:
+  - make test
+  - which VBoxManage
+  - which vagrant
+  - vagrant status
+  - vagrant up --provider=virtualbox
+  - vagrant up salt-test-d1 --provider=virtualbox
+  - vagrant up salt-test-d2 --provider=virtualbox
+  - vagrant up salt-test-d3 --provider=virtualbox
+  - vagrant up salt-master-d1 --provider=virtualbox
+
+# 6a. after_success
+# 6b. after_failure
+# 6za. OPTIONAL before_deploy
+# 6zb. OPTIONAL deploy
+# 6zc. OPTIONAL after_deploy
+# 7. after_script

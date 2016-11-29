@@ -1,0 +1,51 @@
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+TITLE: notes on GeMa // Kubernetes
+* synopsis
+* advisement
+* chapters
+** Introduction to Kubernetes
+:PROPERTIES:
+:ID: 5A2955D9-1924-4B7E-8E49-789EAB0F7BCD
+:END:
+:LOGBOOK:
+:END:
+[2016-11-22 Tue 17:12]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-Kubernetes.org::master@{2016-11-22}::8][git:~/.vault/uris/genesis-ctl/usr/doc/ref-Kubernetes.org::master@{2016-11-22}::8]]
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 5A2955D9-1924-4B7E-8E49-789EAB0F7BCD-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                                       | desc | rowid   |
+       |   | title | url                                                                                       | desc | rowid   |
+       |---+-------+-------------------------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                                           |      | <7>     |
+       | # |       | http://kubernetes.io/docs/getting-started-guides/rkt/                                     |      | <<F1978F9E-F44D-4367-A802-F67B654A53E5>> |
+       | # |       | http://kubernetes.io/docs/getting-started-guides/kubeadm/                                 |      | <<6D1AAE50-4829-43BE-A710-780B9C8920D6>> |
+       | # |       | https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master                |      | <<00E5F25E-C8B3-406D-B1F5-6AB4238A369C>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - kubernetes is a popular container workload scheduler
+     - on Implementation Notes
+       - as of [2016-11-22 Tue 17:26] SELinux must be disable for Kubernetes to operate properly
+   - Questions
+     - Q:
+   - log
+     - [2016-11-22 Tue]
+       - [2016-11-22 Tue 17:30] the configs in =state/machine/service/salt-master/gema.sls= are sufficient to install and fully setup rkt on a CentOSv7 machine
+       - NGa muses at next steps
+     - [2016-11-23 Wed]
+       - [2016-11-23 Wed 16:43] NGa creates =discrete/machine_spec/17E90C70-7EA4-46EE-81E6-18B31C31C91A=, (aliases to =k8s-incep=), to organize kubernetes master creation on a target minion
+       - this may be the master in testing, but shouldn't be required to be in deploy
+       - 
+ - procedure :: 
+
+* extrefs
+** reports
+** defined-terms
+** secrets                                                        :noexport:
+** bibliography
+** footnotes
+[fn:0] simple example of a footnote, delete at your leisure

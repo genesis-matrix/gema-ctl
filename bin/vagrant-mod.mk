@@ -8,12 +8,17 @@ vagrant-help:
 	#+TODO: $@
 vagrant-setup:
 	## $@ ##
-vagrant-into:
-	## $@ ##
-	vagrant ssh
 vagrant-up:
 	## $@ ##
 	@vagrant up --parallel --provision
+vagrant-prep-%:
+	## $@ ##
+	@vagrant up $(@:vagrant-prep-%=%) && vagrant provision $(@:vagrant-prep-%=%)
+vagrant-ssh-%:
+	@vagrant ssh $(@:vagrant-ssh-%=%)
+vagrant-into-%: vagrant-prep-% vagrant-ssh-%
+	## $@ ##
+	@#vagrant up $(@:vagrant-into-%=%) && vagrant provision $(@:vagrant-into-%=%) && vagrant ssh $(@:vagrant-into-%=%)
 vagrant-restart:
 	## $@ ##
 	@vagrant down && vagrant up
@@ -32,6 +37,7 @@ vagrant-dnsresolv-off: vagrant-dnsresolv-clear
 vagrant-wipe: vagrant-destroy
 	## $@ ## 
 	-@rm -rf $(project_root)/.vagrant
+	-@rm -rf $(project_root)/output-vmware-iso
 vagrant-purge: 
 	## $@ ## delete all "genesis-" basebox images registered to vagrant
 	@vagrant box list | sed -ne '/There are no installed boxes/! s/^\(genesis-[^[:space:]]*\) .*$$/\1/p' |xargs -n1 vagrant box remove -f --all 
@@ -40,10 +46,6 @@ vagrant-finish: vagrant-dnsresolv-off
 
 vagrant-die: 
 	## $@ ##
-
-vagrant-status-saltkeys:
-	## $@$ ##
-	-vagrant ssh SV-SALTMASTER-T1 -c 'sudo salt-key -L'
 
 vagrant-build: vagrant-up
 	## $@ ##

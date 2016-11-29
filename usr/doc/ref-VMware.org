@@ -1,6 +1,6 @@
 # -*- mode: org -*-
 #+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
-#+TITLE: notes on Genesis // VMware
+#+TITLE: notes on Genesis Matrix // VMware
 
 * synopsis
 * advisement

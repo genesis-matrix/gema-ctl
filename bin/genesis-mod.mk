@@ -9,11 +9,11 @@ genesis-help:
 
 genesis-setup:
 	## $@ ## 
-	@which vagrant
-	@which jq
-	@which remarshal
+	@which vagrant >/dev/null
+	@which jq >/dev/null
+	@which remarshal >/dev/null
 
-genesis-online: platform-check
+genesis-online: genesis-setup vagrant-up
 	## $@ ## readies and executes $(package_name)
 
 genesis-online-macosx:

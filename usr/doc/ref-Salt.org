@@ -698,6 +698,8 @@ CLOCK: [2016-05-30 Mon 15:51]--[2016-05-30 Mon 15:52] =>  0:01
 [[git:~/.vault/uris/genesis-ctl/ReadMe-Genesis.org::master@{2016-03-19}::1374][git:~/.vault/uris/genesis-ctl/ReadMe-Genesis.org::master@{2016-03-19}::1374]]
  - context ::
    - [0/0] overview
+     - the pillar is a simple 1-pass compiled data store, w/o recursion or reference filling
+     - tldr, =salt-call state.apply state.data.salt-master.pillar.gema-git-checkout= is the proposed solution
    - info/notes
      - srcs
        #+NAME: 41C783DD-358D-4B0A-81F5-5785F2C3A322-srcs
@@ -714,9 +716,14 @@ CLOCK: [2016-05-30 Mon 15:51]--[2016-05-30 Mon 15:52] =>  0:01
        | # |                            | https://docs.saltstack.com/en/latest/ref/pillar/all/salt.pillar.consul_pillar.html      |                             | <<BD275EFC-95AE-42DF-9609-C6E3F4575CE0>> |
        | # |                            | https://docs.saltstack.com/en/latest/ref/runners/all/salt.runners.pillar.html           |                             | <<509D9D55-11A6-4672-9089-6DA8BFC58AD2>> |
        | # | irtnog/salt-pillar-example | https://github.com/irtnog/salt-pillar-example                                           | IRTNOG Salt Pillar Examples | <<C14B18BF-4214-4F30-B3D6-9EAB538E07B9>> |
+       | # |                            | https://docs.saltstack.com/en/latest/ref/pillar/all/salt.pillar.stack.html              |                             | <<AF640EEA-F74D-4EEA-A083-763DFE87DD74>> |
+       | # |                            | https://github.com/bbinet/pillarstack/issues/16                                                                                        |                             | <<F6BBA468-5695-46E5-B749-C90B768C0805>> |
        #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
      - on Initial Understanding a/o Discovery
-     - on Generalized Objects and Attributes
+       - objects are the resource being actioned a/o operated on
+       - attributes are the key-value sets of promoted labels
+       - labels are key-value pairs that decorate /o associate with an object
+     - on Generalized Objects, Attributes, and Labels
        #+CAPTION: Objects
        #+NAME: 0B4776CA-985A-40B3-9118-8D5A3BB0B4F6
        |   |         |
@@ -739,6 +746,60 @@ CLOCK: [2016-05-30 Mon 15:51]--[2016-05-30 Mon 15:52] =>  0:01
        |   | kpi      |
        |   | sla      |
        |   | memberof |
+     - on the Simple Pillar Problem
+       - the pillar is a powerful and useful tool
+       - it's the right place for lots of important data
+       - to coherently manage increasingly complex and dynamic infrastructure means managing complex and dynamic data
+       - for complex and dynamic data, the need to treat it as a model gains importance
+       - the native pillar isn't capable of the multi-pass interpolation needed to resolve interdependent symbols, but Pillarstack is
+     - on the Simple Pillar Solution
+       - both Pillarstack and Reclass solve this problem, and permit internal resources
+       - Pillarstack ships with Salt since version 2016.3
+       - they are similar in purpose, but we'll favor Pillarstack in GeMa because of it comes fully integrated out of the box
+     - on Accumulating Pillars in Sequence
+       |   | ord |        |                   |
+       |---+-----+--------+-------------------|
+       | / |     |        |                   |
+       |   |   1 | GitFS  | simple            |
+       |   |   2 | Stack  | complex           |
+       |   |   3 | Consul | runtime overrides |
+       - the order of Pillar evaluation can be controlled to manage the way in which the values are combined, and ultimately the resulting data set
+       - the GitFS pillar must be sufficient to bootstrap a GeMa master, after which a more complex and varied config may be introduced using pillarstack
+       - pillarstack , unfortuneately, cannot use the gitfs transport. So must be cloned to the local disk.
+       - a local pillar checkout has advantages: use of the pillar_tree system, and use of the pillarstack system from the same source for management of complex and varied pillar data sources
+       - it's still preferable to use gitfs because of the ease, tidyness, and multi-applicability of a transparent git repo. If the sought after advantages become available in this form, the proposed local check-out system should be re-evaluated to determine if it's still the best approach.
+       - a local pillar checkout presents two challenges, first keeping the information up to date, and second securing the information from unwanted access
+       - 
+       - the final pillar will be Consul, used as the "runtime config" pillar
+     - on Maintaining an Up-To-Date and Secure Pillar on the filesystem
+       - securing a local checkout of pillar data is a challenge that
+         should not be taken lightly because one should adopt and
+         adapt the pillar under the assumption that an unknown volume
+         of the secret information ranging in importance from trivial
+         and ephemeral to mission-critical and highly-persistent
+       - should prevent OS-bypass attacks, such as: accessing the filesystem data from a "Live" or rescue CD
+       - should not be unreasonably constrained by volume size, pillar data of several gigs should be as well supported as smaller sizes, and both should be non-problematic
+       - should be automatically pulled, either on trigger or on timer, from a change-controlled source
+     - on Local Pillar Storage Proposal for Salt Master
+       - must be provisioned with situationally adequate swap space, for most purposes this should be no less than 2Gs
+       - swap must be set to automaticaly reset on boot then encrypted with a one time, in-memory cipher that is not stored to disk
+       - the in-memory filesystem, =tmpfs= must be used at =/srv/pillar=
+       - =tmpfs= will retain the pillar data in memory where possible, and swap to disk where it is not, however because =tmpfs= is volatile and the swap is encrypted, this mount will not be suseptible to casual OS-bypass attacks
+       - from the Arch wiki's article on "Swap Encryption"
+         #+BEGIN_EXAMPLE
+           To enable this feature, simply uncomment the line beginning with swap in /etc/crypttab. Change the <device> parameter to the name of your swap device. For example, it will look
+           something like this: 
+
+           /etc/crypttab
+
+           # <name>  <device>     <password>     <options>
+           swap      /dev/sdX#    /dev/urandom   swap,cipher=aes-cbc-essiv:sha256,size=256
+
+           This will map /dev/sdX# to /dev/mapper/swap as a swap partition that can be added in /etc/fstab like a normal swap. If you had a non-encrypted swap partition before, do not
+           forget to disable it - or re-use its fstab entry by changing the device to /dev/mapper/swap. The default options should be sufficient for most usage. For other options see and an
+           explanation of each column, see man 5 crypttab as well as point cryptsetup FAQ 2.3. 
+         #+END_EXAMPLE
+       - 
    - Questions
    - log
 ** on Salt Cloud
@@ -1222,3 +1283,223 @@ CLOCK: [2016-05-30 Mon 15:51]--[2016-05-30 Mon 15:52] =>  0:01
      - clone a VM
        - (nb) perhaps this could be used to clone from templates and subsequently configured a/o customized via the console-oriented guest OS file manip
 
+** on Requirements-Oriented Delivery a/ Testing
+:PROPERTIES:
+:ID: BE8C5B48-5630-4E9C-97B7-AA4F19143FC6
+:END:
+:LOGBOOK:
+:END:
+[2016-10-22 Sat 16:37]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-10-22}::1287][git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-10-22}::1287]]
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: BE8C5B48-5630-4E9C-97B7-AA4F19143FC6-srcs
+       #+CAPTION: reference list
+       | ! | title | url | desc | rowid   |
+       |   | title | url | desc | rowid   |
+       |---+-------+-----+------+---------|
+       | / |       |     |      | <7>     |
+       | # |       |     |      | <<557D0D6C-5A2E-4B0D-8F8A-471EE738B674>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+       - example infratest pillar
+         #+BEGIN_SRC yaml
+           # pillar/infratest/web.sls
+
+           infratest:
+             file:
+               '/etc/httpd':
+         	exists: true
+         #+END_SRC
+       - ex. infratest pillar
+         #+BEGIN_SRC yaml
+           # pillar/infratest/default.sls
+
+           infratest:
+             file:
+               '/etc/passwd':
+         	exists: true
+         #+END_SRC
+       - ex. assign infratest assertions via pillar top
+         #+BEGIN_SRC yaml
+           # pillar/top.sls
+
+           base:
+             '*':
+               - infratest.default
+
+             'web*':
+               - infratest.web
+         #+END_SRC
+     - on Initial Understanding a/o Discovery
+       - 
+   - Questions
+   - log
+ - procedure :: setup saltstack-infratest-module
+   - nb, this action is not needed when using genesis-sls-core because it is already done
+   - add the =infratest.py= test to Salt =_modules= directory
+     #+BEGIN_SRC bash
+     mkdir -fp /srv/salt/_modules ; cd /srv/salt/_modules ; curl -klO 'https://raw.githubusercontent.com/ssplatt/saltstack-infratest-module/master/infratest.py'
+     #+END_SRC
+ - procedure :: common operations
+   - sync modules
+     : salt \* saltutil.sync_modules
+   - All Tests with verbose output
+     #+BEGIN_SRC bash
+     salt \* infratest.run_all details=True
+     #+END_SRC
+     #+BEGIN_EXAMPLE
+       local:
+           ----------
+           Failed:
+           Passed:
+               - /etc/passwd exists: True
+           Totals:
+               ----------
+               Fail:
+                   0
+               Pass:
+                   1
+     #+END_EXAMPLE
+   - a single test
+     #+BEGIN_SRC bash
+     salt \* infratest.file_mode /etc/passwd 0644     
+     #+END_SRC
+     #+BEGIN_EXAMPLE
+       local:
+           ----------
+           Failed:
+           Passed:
+               - /etc/passwd has mode: 0644
+     #+END_EXAMPLE
+
+** on Logging Salt Action Outcomes
+:PROPERTIES:
+:ID: 2D21528C-BB64-4B1A-96D1-52C4B386D073
+:END:
+:LOGBOOK:
+:END:
+[2016-10-23 Sun 22:35]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-10-23}::1354][git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-10-23}::1354]]
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 2D21528C-BB64-4B1A-96D1-52C4B386D073-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                  | desc | rowid   |
+       |   | title | url                                                                  | desc | rowid   |
+       |---+-------+----------------------------------------------------------------------+------+---------|
+       | / |       |                                                                      |      | <7>     |
+       | # |       | https://docs.saltstack.com/en/carbon/topics/jobs/external_cache.html |      | <<D25C108E-0438-4813-90E5-286880B193F1>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+     - on Initial Understanding a/o Discovery
+       - the =syslog= returner for the =master_job_cache= is a sensible way to get started with an audit trail because it requires no setup other than adding the below to the master config
+         : master_job_cache: syslog
+       - to properly track returns from multiple masters, the following returners are interesting
+         |   |                                                                                                                  |
+         |---+------------------------------------------------------------------------------------------------------------------|
+         | / |                                                                                                                  |
+         |   | https://docs.saltstack.com/en/latest/ref/returners/all/salt.returners.pgjsonb.html#module-salt.returners.pgjsonb |
+         |   | https://docs.saltstack.com/en/latest/ref/returners/all/salt.returners.odbc.html                                  |
+         |   | https://docs.saltstack.com/en/latest/ref/returners/all/salt.returners.mongo_return.html                          |
+
+   - Questions
+   - log
+
+** on Operations Security w/ Hubblestack
+:PROPERTIES:
+:ID: 470C8727-C6D2-41D4-945C-83E3D1ED14DC
+:END:
+:LOGBOOK:
+:END:
+[2016-10-23 Sun 04:08]
+[[git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-10-23}::1354][git:~/.vault/uris/genesis-ctl/usr/doc/ref-Salt.org::master@{2016-10-23}::1354]]
+ - context ::
+   - [0/0] overview
+   - info/notes
+     - srcs
+       #+NAME: 470C8727-C6D2-41D4-945C-83E3D1ED14DC-srcs
+       #+CAPTION: reference list
+       | ! | title | url                                                                         | desc | rowid   |
+       |   | title | url                                                                         | desc | rowid   |
+       |---+-------+-----------------------------------------------------------------------------+------+---------|
+       | / |       |                                                                             |      | <7>     |
+       | # |       | https://hubblestack.io/                                                     |      | <<561AA4D9-B767-48F0-8003-B8D9444717C9>> |
+       | # |       | https://github.com/HubbleStack                                              |      | <<5B4D62D7-AB92-4F3D-BCA8-E7254C78D3AA>> |
+       | # |       | https://www.youtube.com/watch?v=r4CGEVOhLiQ                                 | demo | <<E07280B2-6BBD-4CCE-9B17-B74E1818B21B>> |
+       | # |       | https://media.readthedocs.org/pdf/hubblestack/documentation/hubblestack.pdf |      | <<13A98D7D-F38D-4913-8D33-00D14AC618DB>> |
+       | # |       | https://hubblestack.io/content/2016.7.1/hubble-introduction-2016.7.1.pdf    |      | <<ADF9F0FD-0000-4DCE-A3C0-6379D9696EDF>> |
+       | # |       | https://hubblestack.io/content/2016.7.1/hubble-architecture-2016.7.1.pdf    |      | <<DB5A0398-C1BA-4A34-893C-2E4FA18DB4A9>> |
+       #+TBLFM: $5='(if (and (string= @1$rowid "rowid") (string= $rowid "")) (concat "<<"(org-id-new) ">>") $rowid)
+       - Quick Start for Nova Instructions
+         #+BEGIN_EXAMPLE
+           1. wget https://spm.hubblestack.io/2016.7.1/hubblestack_nova-2016.7.1-1.spm
+           2. spm local install hubblestack_nova-2016.7.1-1.spm
+           3. salt \* saltutil.sync_all # alternatively and more minimally use saltutil.sync_modules
+           4. salt \* hubble.audit
+           # should output a catalog of available checks
+         #+END_EXAMPLE
+     - on Initial Understanding a/o Discovery
+       - GeMa uses Hubblestack's GitFS-based install method and otherwise includes requisite software, so that Hubblestack may be used "out-of-the-box"
+       - todo: make the gitfs imports to the roots tree more precise
+     - on Hubblestack by Module
+       |   |        |                           | initial_use               |
+       |---+--------+---------------------------+---------------------------|
+       | / |        |                           |                           |
+       |   | Nova   | Hubble's Auditing System  | =salt-call hubble.audit=  |
+       |   | Quasar | Hubble's Reporting System | n/a, pillar config needed |
+       |   | Pulsar | Hubble's FIM System       |                           |
+       |   | Nebula | Hubble's Insight System   |                           |
+       - Quasar is driven by configs found in Pillar data. See =./srv/genesis-plr/base/label/service_feature/salt-master/hubblestack/quasar/pillar.example=, (embedded below), for a configuration example.
+         #+BEGIN_SRC yaml
+           ## populate the required fields for each returner needed
+
+           #hubblestack:
+           #  nova:
+           #    returner:
+           #      splunk:
+           #        token: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+           #        indexer: splunk-indexer.domain.tld
+           #        sourcetype: hubble_audit
+           #        index: hubble
+           #
+           #  nebula:
+           #    returner:
+           #      splunk:
+           #        token: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+           #        indexer: splunk-indexer.domain.tld
+           #        sourcetype: hubble_osquery
+           #        index: hubble
+           #
+           #  pulsar:
+           #    returner:
+           #      splunk:
+           #        token: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+           #        indexer: splunk-indexer.domain.tld
+           #        sourcetype: hubble_fim
+           #        index: hubble
+
+           #slack_pulsar:
+           #  as_user: true
+           #  username: calculon
+           #  channel: channel
+           #  api_key: xoxb-xxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx
+         #+END_SRC
+       - Pulsar is also driven by config that lives in the Pillar. To aid in rapid and sane deployments within GeMa, we've copied the default =example.pillar= to the =genesis-plr-core= repo, and included it in the Pillar top file for all nodes.
+         - Note, the =hubblestack_pulsar_config.yaml= file is referenced from within the pillar, and provides detail about what in particular to monitor.
+         - From the project:
+           : Every environment will have different needs and requirements, and we understand that, so we've designed Pulsar to be flexible.
+       - Nebula
+         - pre-req, =salt-call state.apply state.apps.osquery=
+
+
+
+
+
+
+
+
+   - Questions
+   - log

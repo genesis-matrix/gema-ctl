@@ -14,17 +14,53 @@
 ***** TODO External Targeting: integrate AD as pillar source
 ***** TODO External Returner Sink: SysLog (to Splunk?), Mongo, MySQL, ODBC, PagerDuty, PushOver, Email, et al
 ***** TODO External Variable/"Runtime" Pillar Source: Mongo, Consul, Etcd
-***** TODO Change-Controlled States
-***** TODO Change-Controlled Master config
+***** IMPLEMENTED Change-Controlled States
+ - context ::
+   - [1/1] overview
+     - [X] use gitfs for state trees
+***** IMPLEMENTED Change-Controlled Master config
+ - context ::
+   - [1/1] overview
+     - [X] use pillar and salt-formula for master config
 *** milestone: v0.4                                       :target_v00dot04:
-***** TODO Salt PKI git-sync and management
+***** STARTED Salt PKI git-sync and management
+- context ::
+  - [5/7] overvew
+    - [X] auto-commit on changes w/ inotify
+    - [X] seed the repo w/ =.gitignore=
+    - [X] pull from upstream repo on branch
+    - [X] per-minion branches
+    - [X] destructive updates from =git.latest=
+    - [ ] event-based checkout from upstream 
+    - [-] enable git-based salt key logging a/ mgmt
+  - info/notes
+    - on Initial Understanding a/o Discovery
+      - ideally, this should use pillar_tree pillar.gitfs rather than a wholly seperate repo
+        - pillar_tree via pillar gitfs isn't available yet, https://github.com/saltstack/salt/issues/19263
+      - this should only be used in a situation where permissions can be managed discretely per-branch
+      - always follow the rule of least-required-privilege
+      - the git option =force-with-lease= would make pushes safer but as of [2016-08-30 Tue] will be too new on some systems
+    - on state reactor: event-triggered git add/commit/push
+      - minion.conf contains an inotify beacon that triggers on file changes
+      - master.conf contains a reactor config that associates an event bus tag w/ a reactor (think: event handler)
+      - the reactor performs simple filtering, munges event data into the subcontext of the appropriate subroutines, then returns
+      - the actioner may be any (set) of state, execution modules, runner, orchestrate or other reactors
+      - the actioner will perform work and (depending on the design) may make use of the tunnelled event data
+    - on Means to Receive Remote Events
+      - https://help.github.com/articles/managing-notifications-for-pushes-to-a-repository/
+      - in practice this we'll expect this to be a privately hosted repo w/ more integration control than github
+      - all the same, here's Github's write up: https://help.github.com/articles/managing-notifications-for-pushes-to-a-repository/
+
 *** milestone: v0.3                                       :target_v00dot03:
 ***** TODO bootstrap Kubernetes as basis for service integration
 *** milestone: v0.2                                       :target_v00dot02:
-***** TODO Quick Standup Rest API
+***** STARTED Quick Standup Rest API
+:LOGBOOK:
+- State "STARTED"    from "TODO"       [2016-08-30 Tue 20:34]
+:END:
  - context ::
    - [0/0] overview
-     - [ ]
+     - [ ] quick-deploy w/ salt-formula
 *** milestone: v0.1                                       :target_v00dot01:
 ***** STARTED Stable, Extensible, Rapidly deployable Salt Master config using Salt Formula w/ Genesis paradigm
  - context ::
@@ -39,7 +75,18 @@
    :ID:       44290E69-DF96-4AB5-951D-31C1554DAF10
    :END:
 *** enhancement requests: genesis-matrix 
-***** REPORTED migrate to =fabric= from =gnumake=
+***** REPORTED facility for switching between gema-scenarios
+ - context :: 
+   - [0/1] overview
+     - [ ] changing scenes shouldn't affect state in genesis-ctl
+   - info/notes
+     - on Initial Understanding a/o Discovery
+     - on Candidate Solutions
+       - switch between =./Saltfile='s
+       - symlink =./etc/salt/roster= to an untracked dir, then back into =./etc/salt/conf.d=
+***** REPORTED Support running GeMa on Windows
+***** REPORTED Support running GeMa on Linux
+***** REPORTED migrate to =pyinvoke= from =gnumake=
 ***** REPORTED add '_meta' tag, for improved intrinsic documentation, to all of the packer 'vars' and 'template' files
 ***** REPORTED add 'pre-flight-check' capability
 ***** REPORTED add 'make online' command to simplify getting started

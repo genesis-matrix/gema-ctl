@@ -61,7 +61,7 @@ opt_shell_postfix ?= 2>/dev/null
 
 ## Platform Info
 machineinfo_uname := $(shell uname -a)
-machineinfo_lsbrelease := $(shell which lsb_release >/dev/null 2>/dev/null && lsb_release -a)
+machineinfo_lsbrelease := $(shell which lsb_release >/dev/null 2>/dev/null && lsb_release -a 2>/dev/null)
 
 
 #
