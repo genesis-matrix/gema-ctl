@@ -1,5 +1,5 @@
 #!/bin/false
-#+PURPOSE: facilitate the setup of Genesis Controller on MacOSX
+#+PURPOSE: facilitate the setup of GeMa Controller on MacOSX
 
 
 
@@ -32,7 +32,7 @@ platform-macosx-check-vagrant:
 platform-macosx-check-wfm:
 	## $@ ##
 
-platform-macosx-check-genesis:
+platform-macosx-check-gema:
 	## $@ ##
 
 platform-macosx-check-packer:

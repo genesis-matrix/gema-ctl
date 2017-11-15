@@ -39,8 +39,8 @@ vagrant-wipe: vagrant-destroy
 	-@rm -rf $(project_root)/.vagrant
 	-@rm -rf $(project_root)/output-vmware-iso
 vagrant-purge: 
-	## $@ ## delete all "genesis-" basebox images registered to vagrant
-	@vagrant box list | sed -ne '/There are no installed boxes/! s/^\(genesis-[^[:space:]]*\) .*$$/\1/p' |xargs -n1 vagrant box remove -f --all 
+	## $@ ## delete all "gema-" basebox images registered to vagrant
+	@vagrant box list | sed -ne '/There are no installed boxes/! s/^\(gema-[^[:space:]]*\) .*$$/\1/p' |xargs -n1 vagrant box remove -f --all 
 vagrant-finish: vagrant-dnsresolv-off 
 	## $@ ##
 
@@ -53,6 +53,29 @@ vagrant-run: vagrant-up
 	## $@ ##
 vagrant-debug: vagrant-up
 	## $@ ##
+
+
+
+#
+## workarounds a/o fixes
+#
+
+
+
+# https://github.com/vagrant-landrush/landrush/issues/292
+workaround-landrush-issue-295:
+workaround-landrush-issue-292:
+	## $@ ##
+	@ln -f -s $(find ~/.vagrant.d/gems/* -type d -maxdepth 0 2>/dev/null | sort -r | head -1) ~/.vagrant/gems/gems
+
+
+
+#
+##
+### core
+##
+#
+
 
 
 vagrant-boxadd-virtualbox-iso-%: packer-build-virtualbox-iso-%.box_vagrant

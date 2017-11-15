@@ -2,7 +2,7 @@
 from __future__ import print_function
 import os,sys
 from invoke import task
-import bin.test
+
 
 
 @task

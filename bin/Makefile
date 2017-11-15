@@ -52,8 +52,8 @@ rparen := $(empty))$(empty)
 
 
 ## Essential Basics
-package_name := genesis-ctl
-package_key := genesis
+package_name := gema-ctl
+package_key := gema
 project_root := $(shell pwd)
 uri_logfile ?= $(project_root)/tmp/log
 opt_shell_postfix ?= 2>/dev/null

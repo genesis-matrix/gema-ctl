@@ -1,1 +1,68 @@
-usr/doc/ReadMe-Genesis.org
+# -*- mode: org -*-
+#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+AUTHOR: Nick Garber
+#+EMAIL: nick.garber@gmail.com
+#+TITLE: Introduction to GeMa Controller
+#+SUBTITLE: GeMa Controller is a portable and scriptable design workstation for modeling, reasoning, and communicating about computer systems infrastructure topics.
+
+** Objectives
+ - Enable quick test-driven iteration cycles for provably-correct quick-deploy infrastructure.
+ - Facilitate collaboration/coordination using practical and friendly tools and conventions.
+ - Minimize the distance between a good idea and a deployed implementation of that idea.
+
+** Design Goals
+ - Move Infrastructure and Operations tasks into greater coherence ...
+   - with *Scientific Research Methods*: reproducible research, independent verification, collegial collaboration, etc.
+   - with *Development Best Practices*: separation of concerns, version control, [[https://en.wikipedia.org/wiki/Don%27t_repeat_yourself][DRY]], re-usable components, clean interfaces, extensibility, etc.
+   - with *Biological System Patterns*: emergent behavior from simple communications, individual dynamicism, herd resiliency, data-driven (as with DNA), etc.
+ - Be [[https://www.python.org/dev/peps/pep-0020][Pythonic]].
+ - See more at [[https://github.com/genesis-matrix/paradigm][GeMa Paradigm]].
+
+** Assumptions
+ - Anthropomorphic design is healthier and more sustainable.
+ - Re-use is ROI.
+ - Change is inevitable and valuable, so should be as fluid and fun as fresh design.
+
+** Questions & Answers
+**** Who is this for?
+One or more persons responsible for and/or contributing to a design/performance/behavior aspect of one or more servers.
+
+**** What does it do (what problem does it solve)?
+Enables a rigorous and creative approach to designing, deploying, and managing variably complex systems.
+
+**** Why is it needed now?
+GeMa is productive, clever, collaborative, and fun. Perhaps you have some use for such things?
+
+** Usage
+*** (Getting Started) Stand up a Minimal Salt-Master
+ - Notes:
+   - Configures, (and creates if not already existent), a Salt Master that is "primed" with minimal but useful configuration.
+   - During =vagrant up=, a =vagrant-trigger= checks for the existence of the requested Vagrant base image,
+     - if the requested Vagrant base image isn't found, and Packer build instructions are found, runs the Packer build for the Vagrant base image, registers the build artifact with Vagrant and continues with the already initiated =vagrant up=.
+   - This is useful for quickly designing and testing states.
+ - Create then SSH into instance
+   #+BEGIN_SRC bash :results drawer :wrap EXAMPLE :dir .
+     # from the top directory in the gema-ctl project
+     make vagrant-into-salt-master-d1 
+   #+END_SRC
+
+*** (Exploring and Designing) Stand up a GeMa Salt-Master
+ - Notes:
+   - A GeMa master is a usable, robust, opinionated, fully-configuration managed, and production focused Salt master design.
+   - To assign the GeMa salt-master policy, this machine was added to a "feature-pack" label for describing the desired salt-master service configuration.
+   - To apply the policy, we "highstate" the machine, which causes the machine to request and apply it's assigned policy.
+   - GeMa Master in =gema-ctl= provides a managed and configurable workspace for policy design - by using that same single source of policy.
+   - This is useful for testing complicated states, event-based interactions, multi-system orchestrations, and service integrations.
+ - Create and enter a "primed" salt-master, by typing =make vagrant-into-salt-master-d1= at the =gema-ctl= root working-dir.
+ - Convert the salt-master from the "primed" config to the "GeMa" config:
+   #+BEGIN_SRC bash :results drawer :wrap EXAMPLE
+   sudo salt-call state.highstate # from CLI w/i a "primed" Salt Master
+   #+END_SRC
+
+** References
+| title                                                                   | url                                                                     | desc                                                |
+|-------------------------------------------------------------------------+-------------------------------------------------------------------------+-----------------------------------------------------|
+| Using SaltStack to automate Vagrant provisioning BY AYMEN EL AMRI       | http://eon01.com/blog/using-saltstack-to-automate-vagrant-provisioning/ | Inspiration and Prior Art                           |
+| Herding Cattle with SaltStack and Targeting via CMDB by by Onno Ebbinge | https://www.youtube.com/watch?v=F3K706JJ2EI                             | Inspiration and Prior Art                           |
+| Genesis Device                                                          | http://memory-alpha.wikia.com/wiki/Genesis_Device                       | A fictional  Device directed by an internal matrix. |
+

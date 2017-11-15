@@ -1,7 +1,0 @@
-# -*- mode: org -*-
-#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
-#+TITLE: notes on Genesis // Virtualbox
-* synopsis
-* advisement
-* subroutines
-
