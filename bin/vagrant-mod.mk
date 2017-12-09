@@ -78,6 +78,11 @@ workaround-landrush-issue-292:
 
 
 
+vagrant-boxadd-qemu-%: packer-build-qemu-%.box_vagrant
+	## $@ ## add new base box to Vagrant
+	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) --provider libvirt #--box-version $(timestamp)
+
+
 vagrant-boxadd-virtualbox-iso-%: packer-build-virtualbox-iso-%.box_vagrant
 	## $@ ## add new base box to Vagrant
 	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) --provider virtualbox #--box-version $(timestamp)
@@ -90,7 +95,12 @@ vagrant-boxadd-vmware-iso--%: packer-build-vmware-iso--%.box_vagrant
 
 vagrant-boxadd-%: packer-build-%.box_vagrant
 	## $@ ## add new base box to Vagrant
-	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(subst .box_vagrant,,$(@:vagrant-boxadd-%=%)))) --provider $(word 2,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) #--box-version $(timestamp)
+	@vagrant box add --force $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)$(@:vagrant-boxadd-%=%)$(PACKER_URI_OUTFILE_SFX)_vagrant --name $(word 2,$(subst --,$(space),$(subst .box_vagrant,,$(@:vagrant-boxadd-%=%)))) --provider $(word 1,$(subst --,$(space),$(@:vagrant-boxadd-%=%))) #--box-version $(timestamp)
+
+
+vagrant-boxdel-qemu--%:
+	## $@ ## check for and remove existing a/o prior boxes of provider 'vmware_desktop'
+	@vagrant box remove -f $(@:vagrant-boxdel-qemu--%=%) --provider=libvirt
 
 
 vagrant-boxdel-vmware-iso--%:
@@ -101,6 +111,11 @@ vagrant-boxdel-vmware-iso--%:
 vagrant-boxdel-virtualbox-iso--%:
 	## $@ ## check for and remove existing a/o prior boxes of provider 'virtualbox'
 	@vagrant box remove -f $(@:vagrant-boxdel-virtualbox-iso--%=%) --provider=virtualbox
+
+
+vagrant-boxchk-qemu--%:
+	## $@ ##
+	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'libvirt' -e '$(subst vagrant-boxchk-qemu--,,$@)' 
 
 
 vagrant-boxchk-vmware-iso--%:
