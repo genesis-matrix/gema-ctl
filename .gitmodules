@@ -10,3 +10,6 @@
 [submodule "mnt/git/gema-sls-contrib-vestibule"]
 	path = mnt/git/gema-sls-contrib-vestibule
 	url = https://github.com/genesis-matrix/gema-sls-contrib-vestibule.git
+[submodule "mnt/git/gema-plr-contrib"]
+	path = mnt/git/gema-plr-contrib
+	url = https://github.com/genesis-matrix/gema-plr-contrib.git
