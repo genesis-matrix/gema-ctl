@@ -107,3 +107,6 @@ tmp/*
 !**/.gitkeep
 
 
+mnt/git/gema-plr-sitelocal
+mnt/git/gema-sls-sitelocal
+mnt/git/gema-sls-sitelocal-vestibule
