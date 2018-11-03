@@ -20,6 +20,7 @@
 
 # alt/aux tooling artifacts
 .vagrant
+Pipfile.lock
 
 
 # ignore secret/personal stuffs (except example files)

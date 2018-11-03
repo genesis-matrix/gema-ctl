@@ -1,24 +1,74 @@
-### Makefile - Vagrant
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
-module_keys += vagrant
-.PHONY: vagrant-help vagrant-ssh vagrant-up vagrant-restart vagrant-down vagrant-clean vagrant-build vagrant-run
 
-vagrant-help:
-	## $@ ##
+from invoke import task
+
+
+# module variables
+_key = vagrant
+_phony = ['vagrant-help', 'vagrant-ssh', 'vagrant-up', 'vagrant-restart', 'vagrant-down', 'vagrant-clean', 'vagrant-build', 'vagrant-run']
+
+
+# functions
+@task
+def vagrant_help(ctx):
+    """
+    ## $@ ##
 	#+TODO: $@
-vagrant-setup:
+    """
+    pass
+
+
+@task
+def vagrant_setup():
+    """
 	## $@ ##
-vagrant-up:
+    """
+    pass
+
+
+@task
+def vagrant_up():
+    """
 	## $@ ##
 	@vagrant up --parallel --provision
+    """
+    ctx.run('vagrant up --parallel --provision')
+
+
+@task
+def vagrant_prep(ctx, arg):
+    """
 vagrant-prep-%:
 	## $@ ##
 	@vagrant up $(@:vagrant-prep-%=%) && vagrant provision $(@:vagrant-prep-%=%)
+    """
+    pass
+
+
+@task
+def vagrant_ssh(ctx, arg):
+    """
 vagrant-ssh-%:
 	@vagrant ssh $(@:vagrant-ssh-%=%)
-vagrant-into-%: vagrant-prep-% vagrant-ssh-%
+    """
+    pass
+
+
+@task
+def vagrant_into(ctx, vm=None):
+    """
+    vagrant-into-%: vagrant-prep-% vagrant-ssh-%
 	## $@ ##
 	@#vagrant up $(@:vagrant-into-%=%) && vagrant provision $(@:vagrant-into-%=%) && vagrant ssh $(@:vagrant-into-%=%)
+    """
+    pass
+
+
+@task
+def vagrant_restart(ctx):
+    """
 vagrant-restart:
 	## $@ ##
 	@vagrant down && vagrant up
@@ -30,10 +80,10 @@ vagrant-destroy: vagrant-down vagrant-dnsresolv-off
 	-@vagrant destroy -f
 vagrant-dnsresolv-clear:
 	## $@ ##
-	-@#vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
+	-@vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
 vagrant-dnsresolv-off: vagrant-dnsresolv-clear
 	## $@ ##
-	-@#vagrant landrush stop
+	-@vagrant landrush stop
 vagrant-wipe: vagrant-destroy
 	## $@ ## 
 	-@rm -rf $(project_root)/.vagrant
