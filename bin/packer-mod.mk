@@ -39,9 +39,9 @@ fn_template_uri = $(if $(shell which jq),$(call fn_tmpl_from_varfile,$@),$(call 
 
 #
 ##
-cmd_packer_pre := export CHECKPOINT_DISABLE=1 PACKER_LOG=t PACKER_CACHE_DIR=$(project_root)/tmp/cache ;
+cmd_packer_pre := export CHECKPOINT_DISABLE=1 PACKER_LOG=t PACKER_CACHE_DIR=$(project_root)/var/tmp/cache ;
 shell_post := &>$(uri_log)
-opt_packer := -var='http_directory=$(uri_assets)' -var='output_directory=$(project_root)/tmp/build' -var='uri_scripts=$(uri_scripts)' 
+opt_packer := -var='http_directory=$(uri_assets)' -var='output_directory=$(project_root)/var/tmp/build' -var='uri_scripts=$(uri_scripts)' 
 
 
 #
@@ -51,7 +51,7 @@ module_keys += packer
 packer-help:
 	## $@ ##
 	# - for a list of available images: make packer-list-builds
-	# - (ex.) create a specific build artifact: make $(pwd)/tmp/build/packer-artifact--vmware-iso--CentOS-6.7-x86_64.box_vagrant
+	# - (ex.) create a specific build artifact: make $(pwd)/var/tmp/build/packer-artifact--vmware-iso--CentOS-6.7-x86_64.box_vagrant
 	# - (ex.) generic build entrypoint command: make packer-build-vmware-iso--CentOS-6.7-x86_64.box_vagrant 
 	# - (ex.) vagrant build and register: make vagrant-boxadd-vmware-iso--CentOS-6.7-x86_64
 
