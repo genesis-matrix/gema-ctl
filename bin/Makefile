@@ -102,6 +102,12 @@ timestamp := $(shell date -u "+%Y%m%dT%H%M%S")
 #
 
 online: $(package_key)-online
+pause:
+	## $@ ##
+	@sleep 1
+pause%:
+	## $@ ##
+	@sleep $(@:pause%=%)
 chkdirs:
 	## $@ ##
 	mkdir -p $(project_root)/tmp/{build,cache,output,scratch}
