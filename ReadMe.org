@@ -1,5 +1,5 @@
 # -*- mode: org -*-
-#+SETUPFILE: ~/.vault/cfgs/org-central/org-setupfile
+#+SETUPFILE: ~/.vault/cfgs/emacs/apps/org/org-setupfile
 #+AUTHOR: Nick Garber
 #+EMAIL: nick.garber@gmail.com
 #+TITLE: Introduction to GeMa Controller
