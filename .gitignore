@@ -14,13 +14,10 @@
 .directory
 
 
-# alt/aux version control tracking artifacts
-.svn
-
-
 # alt/aux tooling artifacts
 .vagrant
 Pipfile.lock
+.mypy_cache
 
 
 # ignore secret/personal stuffs (except example files)

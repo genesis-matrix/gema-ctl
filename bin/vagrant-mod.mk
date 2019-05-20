@@ -28,6 +28,8 @@ vagrant-down:
 vagrant-destroy: vagrant-down vagrant-dnsresolv-off
 	## $@ ##
 	-@vagrant destroy -f
+vagrant-destroy-%:
+	@vagrant destroy -f $(@:vagrant-destroy-%=%)
 vagrant-dnsresolv-clear:
 	## $@ ##
 	-@#vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
