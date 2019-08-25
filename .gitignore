@@ -15,6 +15,9 @@
 
 
 # alt/aux tooling artifacts
+GPATH
+GRTAGS
+GTAGS
 .vagrant
 Pipfile.lock
 .mypy_cache

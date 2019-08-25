@@ -13,6 +13,7 @@ graphviz = "*"
 dash = "*"
 pandas = "*"
 ruamel-yaml-cmd = "*"
+salt = "*"
 
 [dev-packages]
 pipenv = "*"

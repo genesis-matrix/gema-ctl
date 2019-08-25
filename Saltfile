@@ -36,12 +36,13 @@ salt-call:
 
 salt-ssh:
   file_client: local
-  config_dir: ./etc/salt-solo
+  #config_dir: ./etc/salt-solo
+  config_dir: ./etc/salt ## useful when in a GeMa Workstation Lab Environment VM
   wipe_ssh: True
   ssh_max_procs: 25
   timeout: 2
   no_host_keys: True
-  roster_file: ./etc/salt/roster
+  roster_file: etc/salt/roster
   ssh_log_file: var/log/ssh.log
   ssh_use_home_key: True
 
