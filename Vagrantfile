@@ -1,1 +1,1 @@
-etc/vagrant/saltroster.20180501.vagrantfile
+etc/vagrant/saltroster.20200208.vagrantfile
