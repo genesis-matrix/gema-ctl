@@ -20,6 +20,8 @@
 
 # alt/aux tooling artifacts
 .vagrant
+.stignore
+Pipfile.lock
 
 
 # ignore secret/personal stuffs (except example files)
@@ -61,7 +63,9 @@ gmon.out
 var/*/*
 tmp/*
 *.html
-
+GPATH
+GRTAGS
+GTAGS
 
 # compiled ao binary
 *.pyc
@@ -107,6 +111,8 @@ tmp/*
 !**/.gitkeep
 
 
+mnt/git/gema-sls-personal
+mnt/git/gema-plr-personal
 mnt/git/gema-plr-sitelocal
 mnt/git/gema-sls-sitelocal
 mnt/git/gema-sls-sitelocal-vestibule

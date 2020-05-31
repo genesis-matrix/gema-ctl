@@ -43,6 +43,14 @@ help-platform:
 	@echo "\tmachineinfo_uname == $(machineinfo_uname)"
 	@echo "\tmachineinfo_lsbrelease == $(machineinfo_lsbrelease)"
 
+pause:
+	## $@ ##
+	@sleep 3
+
+pause%:
+	## $@ ##
+	@sleep $(@:pause%=%)
+
 ## helper variables
 empty :=
 space := $(empty) $(empty)
@@ -113,3 +121,4 @@ chkdirs:
 
 ## pull in Makefile functional modules
 -include ./bin/*-mod.mk
+-include ./srv/salt/pillar/base.*/MISC/GNUMAKE/*-mod.mk

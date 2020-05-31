@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+invoke = "*"
+pipenv = "*"
+pipx = "*"
+pysimplegui = "*"
+
+[dev-packages]
+pytest = "*"
+flake8 ="*"
+
+[scripts]
+printspam = "python -c \"print('I am a silly example, no one would need to do this')\""

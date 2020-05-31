@@ -1,12 +1,12 @@
+[submodule "mnt/git/paradigm"]
+	path = mnt/git/paradigm
+	url = https://github.com/genesis-matrix/paradigm.git
 [submodule "mnt/git/gema-sls-core"]
 	path = mnt/git/gema-sls-core
 	url = https://github.com/genesis-matrix/gema-sls-core.git
 [submodule "mnt/git/gema-plr-core"]
 	path = mnt/git/gema-plr-core
 	url = https://github.com/genesis-matrix/gema-plr-core.git
-[submodule "mnt/git/paradigm"]
-	path = mnt/git/paradigm
-	url = https://github.com/genesis-matrix/paradigm.git
 [submodule "mnt/git/gema-sls-contrib-vestibule"]
 	path = mnt/git/gema-sls-contrib-vestibule
 	url = https://github.com/genesis-matrix/gema-sls-contrib-vestibule.git

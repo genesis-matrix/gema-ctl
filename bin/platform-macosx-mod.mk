@@ -35,7 +35,5 @@ platform-macosx-check-wfm:
 platform-macosx-check-gema:
 	## $@ ##
 
-platform-macosx-check-packer:
-	## $@ ##
-	@which packer 2>/dev/null 1>/dev/null && echo "OK: Packer installed" $(opt_shell_postfix)
 
+## EOF ##

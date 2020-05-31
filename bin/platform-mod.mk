@@ -6,7 +6,8 @@ ifeq ($(strip $(firstword $(machineinfo_uname))) , Darwin)
 platform = macosx
 endif
 
-platform-check: $(foreach var,$(module_keys),platform-check-$(var))
+platform-check: platform-chk
+platform-chk: $(foreach var,$(module_keys),platform-check-$(var))
 	## $@ ## 
 platform-check-test:
 	## $@ ## 

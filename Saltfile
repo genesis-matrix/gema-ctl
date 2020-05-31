@@ -1,29 +1,72 @@
-#
 ##
-###
 ##
-#
+##
 
 
-## http://docs.saltstack.com/en/latest/topics/ssh/#define-cli-options-with-saltfile
-## https://github.com/saltstack/salt/issues/9639
+
+##_META:
+##  references:
+##    - http://docs.saltstack.com/en/latest/topics/ssh/#define-cli-options-with-saltfile
+##    - https://github.com/saltstack/salt/issues/9639
+##    - https://github.com/saltstack/salt/issues/41080
+##
+
+
+
+## <JINJA>
+## </JINJA>
+
+
+
+#
+## salt:
+##   config_dir: ./etc/salt-solo
+##   root_dir: ./
+##   pki_dir: ./var/pki/master
+##   cachedir: ./var/cache/salt/master
+##   ssh_log_file: ./var/log/salt/ssh
+
+
+
+#
+salt-call:
+  file_client: local
+  config_dir: ./etc/salt-solo
+  root_dir: ./
+
 salt-ssh:
-  config_dir: ./etc/salt
+  file_client: local
+  config_dir: ./etc/salt-solo
   wipe_ssh: True
   ssh_max_procs: 25
   timeout: 2
   no_host_keys: True
   roster_file: ./etc/salt/roster
+  ssh_log_file: var/log/ssh.log
+  ssh_use_home_key: True
 
-salt:
-  config_dir: ./etc/salt
-
-salt-key:
-  config_dir: ./etc/salt
+salt-run:
+  file_client: local
+  config_dir: ./etc/salt-solo
+  root_dir: ./
 
 salt-cloud:
-  config_dir: ./etc/salt
+  file_client: local
+  config_dir: ./etc/salt-solo
+  root_dir: ./
+
+salt-minion:
+  root_dir: ./
+  config_dir: ./etc/salt-solo
+  file_client: local
+
 
 salt-master:
-  config_dir: ./etc/salt
+  root_dir: ./
+  config_dir: ./etc/salt-solo
+  file_client: local
+  ssh_log_file: ./var/log/salt/ssh
 
+
+
+## EOF

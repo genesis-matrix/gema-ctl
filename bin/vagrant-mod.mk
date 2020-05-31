@@ -8,17 +8,23 @@ vagrant-help:
 	#+TODO: $@
 vagrant-setup:
 	## $@ ##
+vagrant-chk: vagrant-chk-prereqs
+	## $@ ##
+vagrant-chk-prereqs:
+	## $@ ##
+	@which vagrant >/dev/null || (echo "ERR: required program 'vagrant' not found. Please install/add it!" ; exit 3)
 vagrant-up:
 	## $@ ##
 	@vagrant up --parallel --provision
 vagrant-prep-%:
 	## $@ ##
 	@vagrant up $(@:vagrant-prep-%=%) && vagrant provision $(@:vagrant-prep-%=%)
+	-@sleep 5 ; vagrant ssh salt-master-d1 -c 'sudo salt-key -ya $(@:vagrant-prep-%=%)'
 vagrant-ssh-%:
-	@vagrant ssh $(@:vagrant-ssh-%=%)
+	@vagrant ssh $(@:vagrant-ssh-%=%) -c 'sudo -i'
 vagrant-into-%: vagrant-prep-% vagrant-ssh-%
 	## $@ ##
-	@#vagrant up $(@:vagrant-into-%=%) && vagrant provision $(@:vagrant-into-%=%) && vagrant ssh $(@:vagrant-into-%=%)
+	@#vagrant up $(@:vagrant-into-%=%) && vagrant provision $(@:vagrant-into-%=%) && sleep 5 && vagrant ssh $(@:vagrant-into-%=%) -c 'sudo -i'
 vagrant-restart:
 	## $@ ##
 	@vagrant down && vagrant up
@@ -28,12 +34,16 @@ vagrant-down:
 vagrant-destroy: vagrant-down vagrant-dnsresolv-off
 	## $@ ##
 	-@vagrant destroy -f
+vagrant-destroy-%:
+	@vagrant destroy -f $(@:vagrant-destroy-%=%) && sleep 5 && vagrant ssh salt-master-d1 -c 'sudo salt-key -yd $(@:vagrant-destroy-%=%)'
 vagrant-dnsresolv-clear:
 	## $@ ##
-	-@vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
+	-@#vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
+	-@#vagrant hostmanager
 vagrant-dnsresolv-off: vagrant-dnsresolv-clear
 	## $@ ##
-	-@vagrant landrush stop
+	-@#vagrant landrush stop
+	-@#vagrant hostmanager
 vagrant-wipe: vagrant-destroy
 	## $@ ## 
 	-@rm -rf $(project_root)/.vagrant

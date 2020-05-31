@@ -72,6 +72,12 @@ $(BUILD_DIR)/$(PACKER_URI_OUTFILE_PFX)%$(PACKER_URI_OUTFILE_SFX)_digitalocean: c
 	@echo
 
 
+packer-chk: packer-chk-prereqs
+	## $@ ##
+packer-chk-prereqs:
+	## $@ ##
+	@which packer >/dev/null || (echo "ERR: required program 'packer' not found. Please install/add it!" ; exit 3)
+	@which jq >/dev/null || (echo "ERR: required program 'jq' not found. Please install/add it!" ; exit 3)
 packer-info-%:
 	## $@ ##
 	packer inspect $(uri_configs)/$(@:packer-info-%=%)$(sfx_template)
