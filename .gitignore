@@ -21,6 +21,8 @@ GTAGS
 .vagrant
 Pipfile.lock
 .mypy_cache
+.history
+.vscode
 
 
 # ignore secret/personal stuffs (except example files)
