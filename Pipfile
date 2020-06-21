@@ -5,22 +5,26 @@ name = "pypi"
 
 [packages]
 invoke = "*"
-python-vagrant = "*"
-ruamel-yaml = "*"
-yamale = "*"
-networkx = "*"
-graphviz = "*"
-dash = "*"
-pandas = "*"
-ruamel-yaml-cmd = "*"
-salt = "*"
+pipenv = "*"
 pre-commit = "*"
-pysimplegui = "*"
+pytest = "*"
+salt = "*"
+# dash = "*"
+# flake8 ="*"
+# graphviz = "*"
+# networkx = "*"
+# pandas = "*"
+# pysimplegui = "*"
+# python-vagrant = "*"
+# ruamel-yaml = "*"
+# ruamel-yaml-cmd = "*"
+# testinfra = "*"
+# yamale = "*"
 
 [dev-packages]
-pipenv = "*"
-testinfra = "*"
-pytest = "*"
 
 [requires]
 python_version = "3.7.7"
+
+[scripts]
+printspam = "python -c \"print('I am a silly example, no one would need to do this')\""
