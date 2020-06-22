@@ -1,6 +1,6 @@
 #!/bin/false
 
-## Salt - 
+## Salt -
 module_keys += salt
 export vm_salt_master   := salt-master-d1
 export uri_salt_roots   := $(project_root)/srv/salt/fileserver/base.*

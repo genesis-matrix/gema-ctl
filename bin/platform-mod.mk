@@ -8,12 +8,12 @@ endif
 
 platform-check: platform-chk
 platform-chk: $(foreach var,$(module_keys),platform-check-$(var))
-	## $@ ## 
+	## $@ ##
 platform-check-test:
-	## $@ ## 
+	## $@ ##
 
 platform-check-bash: platform-$(platform)-check-bash
-	## $@ ## 
+	## $@ ##
 platform-check-swpkgs: platform-$(platform)-check-swpkgs
 	## $@ ##
 platform-check-salt: platform-$(platform)-check-salt

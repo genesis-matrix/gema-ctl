@@ -20,7 +20,7 @@ python-chk-prereqs: python-install-pyenv python-pyenv-install-python python-inst
 	@which python >/dev/null || (echo "ERR: required program 'python' not found. Please install/add it!" ; exit 3)
 	@which pipenv >/dev/null || (echo "ERR: required program 'pipenv' not found. Please install/add it!" ; exit 3)
 
-python-chk-config: 
+python-chk-config:
 	## $@ ##
 	#,TODO: check that the python-version is among pyenv's available versions
 
@@ -45,7 +45,6 @@ python-install-pipenv: python-install-pyenv
 python-ready-pipenv: python-pipenv-install
 	## $@ ##
 	@pipenv install
-	@pipenv run precommit.hook
 
 
 python-pipenv-install:

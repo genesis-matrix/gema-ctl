@@ -2,6 +2,8 @@
 ## Makefile
 
 
+.PHONY: intro help help-commands help-platform pause pause online
+
 #
 ## default rule
 #
@@ -18,21 +20,6 @@ help :
 	@echo "additional documentation is available in the ./ReadMe.org file"
 	@echo "\tor for example: make help-x -- where x is any of: $(module_keys)"
 	@echo "\tor for a list of commands: make help-commands"
-
-
-help-todo-crit:
-	## $@ ##
-	@echo "\t__urgent:" && grep -rIn '#+XXX:' $(srcdir) $(sysconfdir)  $(opt_shell_postfix) | nl 
-help-todo-high:
-	## $@ ##
-	@echo "\t__needed:" && grep -rIn '#+FIXME:' $(srcdir) $(sysconfdir)  $(opt_shell_postfix) | nl
-help-todo: help-todo-crit help-todo-high
-	## $@ ##
-	@echo "\t__optimal:" && grep -rIn '#+TODO:' $(srcdir) $(sysconfdir)  $(opt_shell_postfix) | nl
-help-todo-low:
-	## $@ ##
-	@echo "\t__considerations:" && grep -rIin -e '#+Q:' -e '#+WARN:' -e '#+INFO:' -e '#+NB:' $(srcdir) $(sysconfdir)  $(opt_shell_postfix) | nl
-
 
 help-commands:
 	## $@ ##
@@ -103,22 +90,17 @@ DIR_LIST := $(TMP_DIR_LIST) $(BUILD_DIR_LIST) $(INSTALL_DIR) $(RELEASE_DIR_LIST)
 
 #
 ## config variables
-timestamp := $(shell date -u "+%Y%m%dT%H%M%S")
+timestamp := $(shell date -u "+%Y%m%dT%H%M%S%z")
 
 #
 ## repo-level operations
 #
 
 online: $(package_key)-online
-pause:
-	## $@ ##
-	@sleep 1
-pause%:
-	## $@ ##
-	@sleep $(@:pause%=%)
+
 chkdirs:
 	## $@ ##
-	mkdir -p $(project_root)/tmp/{build,cache,output,scratch}
+	mkdir -p $(project_root)/var/{log,tmp,cache/pki/minions,cache/proc,scratch,build}
 
 
 #

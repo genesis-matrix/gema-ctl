@@ -35,15 +35,6 @@ vagrant-destroy: vagrant-down vagrant-dnsresolv-off
 	## $@ ##
 	-@vagrant destroy -f
 vagrant-destroy-%:
-<<<<<<< HEAD
-	@vagrant destroy -f $(@:vagrant-destroy-%=%)
-vagrant-dnsresolv-clear:
-	## $@ ##
-	-@#vagrant landrush ls | awk '{print $2}' | xargs -n1 vagrant landrush del
-vagrant-dnsresolv-off: vagrant-dnsresolv-clear
-	## $@ ##
-	-@#vagrant landrush stop
-=======
 	@vagrant destroy -f $(@:vagrant-destroy-%=%) && sleep 5 && vagrant ssh salt-master-d1 -c 'sudo salt-key -yd $(@:vagrant-destroy-%=%)'
 vagrant-dnsresolv-clear:
 	## $@ ##
@@ -53,18 +44,17 @@ vagrant-dnsresolv-off: vagrant-dnsresolv-clear
 	## $@ ##
 	-@#vagrant landrush stop
 	-@#vagrant hostmanager
->>>>>>> gema-ctl.14west/new-master
 vagrant-wipe: vagrant-destroy
-	## $@ ## 
+	## $@ ##
 	-@rm -rf $(project_root)/.vagrant
 	-@rm -rf $(project_root)/output-vmware-iso
-vagrant-purge: 
+vagrant-purge:
 	## $@ ## delete all "gema-" basebox images registered to vagrant
-	@vagrant box list | sed -ne '/There are no installed boxes/! s/^\(gema-[^[:space:]]*\) .*$$/\1/p' |xargs -n1 vagrant box remove -f --all 
-vagrant-finish: vagrant-dnsresolv-off 
+	@vagrant box list | sed -ne '/There are no installed boxes/! s/^\(gema-[^[:space:]]*\) .*$$/\1/p' |xargs -n1 vagrant box remove -f --all
+vagrant-finish: vagrant-dnsresolv-off
 	## $@ ##
 
-vagrant-die: 
+vagrant-die:
 	## $@ ##
 
 vagrant-build: vagrant-up
@@ -135,16 +125,16 @@ vagrant-boxdel-virtualbox-iso--%:
 
 vagrant-boxchk-qemu--%:
 	## $@ ##
-	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'libvirt' -e '$(subst vagrant-boxchk-qemu--,,$@)' 
+	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'libvirt' -e '$(subst vagrant-boxchk-qemu--,,$@)'
 
 
 vagrant-boxchk-vmware-iso--%:
-	## $@ ##  
-	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'vmware-iso' -e '$(subst vagrant-boxchk-vmware-iso--,,$@)' 
+	## $@ ##
+	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'vmware-iso' -e '$(subst vagrant-boxchk-vmware-iso--,,$@)'
 
 vagrant-boxchk-virtualbox-iso--%:
 	## $@ ##
-	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'virtualbox-iso' -e '$(subst vagrant-boxchk-virtualbox-iso--,,$@)' 
+	@vagrant box list --box-info 2>/dev/null | grep -qs -e 'virtualbox-iso' -e '$(subst vagrant-boxchk-virtualbox-iso--,,$@)'
 
 vagrant-boxlst:
 	@vagrant box list --box-info | awk '{print($$1, substr($$2,2, length(substr($$2,2)) -1))}'
@@ -153,4 +143,3 @@ packer-artifact--vmware-iso--%: packer-artifact--vmware-iso--%.box_vagrant
 packer-artifact--vmware-iso--%.box_vagrant: $(BUILD_DIR)/packer-artifact--vmware-iso--%.box_vagrant
 $(BUILD_DIR)/packer-artifact--vmware-iso--%.box_vagrant:
 	## $@ ##
-

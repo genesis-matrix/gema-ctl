@@ -20,3 +20,25 @@ test-suite--default:
 	vagrant provision
 	vagrant status
 
+
+test-ready-precommit: python-ready-pipenv
+	## $@ ##
+	@pipenv run pre-commit install
+
+
+test-precommit-install-foreach-submodule:
+	## $@ ##
+	@pipenv run git submodule foreach pre-commit install
+
+
+test-precommit-run-all: test-ready-precommit
+	## $@ ##
+	@pipenv run pre-commit run --all-files
+
+
+test-precommit-run-all-foreach-submodule:
+	## $@ ##
+	@pipenv run git submodule foreach pre-commit run --all-files
+
+
+## EOF

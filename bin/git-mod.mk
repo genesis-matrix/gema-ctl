@@ -11,7 +11,7 @@ scm-chk: scm-chk-prereqs
 scm-chk-prereqs:
 	## $@ ##
 	@which git >/dev/null || (echo "ERR: required program 'git' not found. Please install/add it!" ; exit 3)
-scm-clean: 
+scm-clean:
 	## $@ ##
 	git clean -xdfn
 scm-init:

@@ -43,7 +43,7 @@ GeMa is productive, clever, collaborative, and fun. Perhaps you have some use fo
  - Create then SSH into instance
    #+BEGIN_SRC bash :results drawer :wrap EXAMPLE :dir .
      # from the top directory in the gema-ctl project
-     make vagrant-into-salt-master-d1 
+     make vagrant-into-salt-master-d1
    #+END_SRC
 
 *** (Exploring and Designing) Stand up a GeMa Salt-Master
@@ -65,4 +65,3 @@ GeMa is productive, clever, collaborative, and fun. Perhaps you have some use fo
 | Using SaltStack to automate Vagrant provisioning BY AYMEN EL AMRI       | http://eon01.com/blog/using-saltstack-to-automate-vagrant-provisioning/ | Inspiration and Prior Art                           |
 | Herding Cattle with SaltStack and Targeting via CMDB by by Onno Ebbinge | https://www.youtube.com/watch?v=F3K706JJ2EI                             | Inspiration and Prior Art                           |
 | Genesis Device                                                          | http://memory-alpha.wikia.com/wiki/Genesis_Device                       | A fictional  Device directed by an internal matrix. |
-
