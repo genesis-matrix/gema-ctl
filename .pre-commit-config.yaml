@@ -17,6 +17,7 @@ repos:
             language_version: python3
           - id: check-ast         # Simply check whether files parse as valid python.
             language_version: python3
+          - id: check-toml
           - id: check-yaml
           - id: check-json
           - id: check-symlinks
