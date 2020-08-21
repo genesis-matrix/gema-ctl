@@ -25,6 +25,10 @@ help-commands:
 	## $@ ##
 	@find $(project_root)/srv/salt/pillar/base.*/MISC/GNUMAKE/*-mod.mk -exec sed -ne '/^[a-zA-Z0-9%$$_-]*:.*/N;s/^\([a-zA-Z0-9%$$_-]*\):.*## $$@ ##\(.*\)/\1 ... \2/p' {} \;
 
+help-commands-%:
+	## $@ ##
+	@find $(project_root)/srv/salt/pillar/base.*/MISC/GNUMAKE/*-mod.mk -exec sed -ne '/^[a-zA-Z0-9%$$_-]*:.*/N;s/^\([a-zA-Z0-9%$$_-]*\):.*## $$@ ##\(.*\)/\1 ... \2/p' {} \; | grep -is -e '$(subst help-commands-,,$@)'
+
 help-platform:
 	## $@ ##
 	@echo "\tmachineinfo_uname == $(machineinfo_uname)"
