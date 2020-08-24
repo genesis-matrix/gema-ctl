@@ -7,8 +7,7 @@ name = "pypi"
 invoke = "*"
 pipenv = "*"
 pre-commit = "*"
-pytest = "*"
-# salt = "*"
+commitizen = "*"
 # dash = "*"
 # flake8 ="*"
 # graphviz = "*"
@@ -22,9 +21,11 @@ pytest = "*"
 # yamale = "*"
 
 [dev-packages]
+salt = "*"
+pytest = "*"
 
 [requires]
-#python_version = "3.7.7"
+python_version = "3.6.8"
 
 [scripts]
 printspam = "python -c \"print('I am a silly example, no one would need to do this')\""
